@@ -110,6 +110,14 @@ Version 1 must not automatically:
 * Correct track positions
 * Perform automatic cleanup
 
+Terminology clarification:
+
+Track Merge means combining two or more distinct Tracks into a single Track identity and is forbidden in v1.
+
+Source-set Aggregation means combining independently parsed and validated source Track collections into one Canonical collection while preserving every Track identity and observation unchanged.
+
+Source-set Aggregation is not Track Merge.
+
 Version 1 also does not include:
 
 * Camera Solve

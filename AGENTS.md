@@ -86,6 +86,25 @@ The GUI must call application/core functionality instead.
 
 ## 4. Preserve Artist Tracking Data
 
+### Track Merge vs Source-set Aggregation
+
+Do not confuse Track Merge with Source-set Aggregation.
+
+Do not merge tracks. Track Merge means combining two or more distinct Track identities into one Track and is forbidden in v1.
+
+Source-set Aggregation means combining independently parsed and validated Track collections into one Canonical collection while preserving every Track identity and observation unchanged. Source-set Aggregation is not Track Merge.
+
+Source-set Aggregation must not:
+
+- combine observations across different Track identities
+- deduplicate Tracks
+- silently rename Tracks
+- resolve identity by coordinate proximity
+- resolve identity by frame overlap
+- resolve identity by Track order
+- resolve identity by source role
+- resolve identity by visible Track Name
+
 Artist-created 2D track data defaults to:
 
 ```text
