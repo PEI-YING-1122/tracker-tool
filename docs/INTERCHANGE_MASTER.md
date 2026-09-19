@@ -94,6 +94,97 @@ if source_software == ...
 
 ---
 
+## Conversion Orchestration Contract
+
+唯一 conversion architecture：
+
+```text
+Source Native
+→ Source Native Reader
+→ Canonical 2D Track Core
+→ Canonical Validation
+→ Target Native Writer
+→ Target Native
+```
+
+禁止建立 pairwise converters，例如：
+
+```text
+3DE → PFTrack
+3DE → SynthEyes
+PFTrack → 3DE
+...
+```
+
+所有轉換必須經過 Canonical。
+
+正式 internal software identifiers：
+
+```text
+3DE_R5
+PFTRACK_2017
+SYNTHEYES_2304
+```
+
+不要自動接受 alias，也不要由 filename/content 猜 software。
+
+Reader responsibility：
+
+- Source-specific parsing
+- Native validation
+- Native → Canonical mapping
+
+Canonical Validation responsibility：
+
+- 驗證既有 Canonical contract
+- 不修改資料
+
+Writer responsibility：
+
+- Canonical → target native
+- Writer 只可依賴 Canonical + target 所需 runtime ShotConfig
+- Writer 不得依 source software branching
+- Writer 不得知道原始 source-specific semantics
+
+Orchestration responsibility：
+
+- dispatch correct Reader
+- run Canonical validation
+- dispatch correct Writer
+- 不做 filtering / merge / rename / interpolation / repair
+
+PFTrack source role：
+
+```text
+AUTOTRACK / USERTRACK
+```
+
+只屬 PFTrack Reader provenance / diagnostics。
+
+不得進入 Canonical track semantics。
+
+Step 11 第一版 single-source contract：
+
+先支援：
+
+- 3DE_R5 single source
+- PFTRACK_2017 AUTOTRACK single source
+- PFTRACK_2017 USERTRACK single source
+- SYNTHEYES_2304 single source
+
+```text
+PFTRACK_SOURCE_SET
+```
+
+AutoTrack + UserTrack aggregation 保留既有 Reader 能力，但不納入第一個 orchestration function 的最小實作，後續獨立接入。
+
+不定義 CLI option syntax。CLI command-line argument contract 仍留待後續 wrapper 層定義。
+
+不新增任何 selection / filtering / interpolation / track merge 行為。
+
+本次不要定義 file path IO contract。Conversion Core 先以 native text 作為 input/output，file reading/writing 留給 CLI/application layer。
+
+---
 ## 4. Lossless Interchange Principle
 
 Artist-created Source Track Data 預設：
