@@ -163,6 +163,58 @@ Canonical.track_id
 
 若 target name collision 必須 deterministic mapping。
 
+### Canonical Track Identity
+
+SynthEyes Tracker 2-D Paths 每一筆 observation 使用：
+
+```text
+<TRACKER_NAME> <FRAME> <U> <V> <OUTCOME>
+```
+
+此 native schema 沒有獨立 Track ID 或 Track block identity。
+
+因此 Reader 必須以 exact native TRACKER_NAME 作為 native grouping key。
+
+所有具有相同 exact TRACKER_NAME 的 observation rows 屬於同一條 Canonical Track。
+
+Canonical identity 規則：
+
+```text
+track_id = syntheyes::<exact native tracker name>
+track_name = <exact native tracker name>
+```
+
+Example：
+
+Native rows：
+
+```text
+Tracker0001 0 ...
+Tracker0001 1 ...
+Tracker0001 3 ...
+```
+
+Canonical：
+
+```text
+track_id   = syntheyes::Tracker0001
+track_name = Tracker0001
+```
+
+Rules：
+
+- tracker name 必須 exact preserve。
+- leading zeros / case 不得自行 normalize。
+- 同一 exact tracker name 的 rows 必須聚合為同一 Canonical Track。
+- 不得依 row order、coordinate proximity 或 frame overlap 建立額外 Track identity。
+- 不得使用 random UUID。
+- 不得自行加入 block index 或 occurrence index。
+- 若同一 tracker name 在同一 frame 出現多筆 observation，視為 same-track/frame conflict，Reader 必須拒絕。
+- 同一 tracker name 在不同 frame 出現，仍屬同一 Track；缺少的 frame 為 natural gap。
+- track_id 只作 Canonical internal identity。
+- Writer 仍輸出 Canonical.track_name，而不是 Canonical.track_id。
+
+
 ---
 
 ## 9. Natural Gaps
