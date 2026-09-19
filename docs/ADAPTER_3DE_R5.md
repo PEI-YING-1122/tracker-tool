@@ -139,7 +139,6 @@ production_frame
 production_start_frame
 + 3de_internal_frame
 - 1
-```
 
 Writer：
 
@@ -192,7 +191,52 @@ exact preserve string。
 
 ```text
 1
+
+### Canonical Track Identity
+
+3DE native Track 沒有獨立 stable Track ID。
+
+Reader 必須以：
+
+```text
+3de::<6-digit 1-based native track block index>::<exact native track name>
 ```
+
+生成 Canonical `track_id`。
+
+例如第一個 native Track：
+
+```text
+Track Name:
+Point0001
+```
+
+應得到：
+
+```text
+track_id = 3de::000001::Point0001
+track_name = Point0001
+```
+
+第二個 Track 如果也叫 `Point0001`，則：
+
+```text
+track_id = 3de::000002::Point0001
+track_name = Point0001
+```
+
+規則：
+
+- native track block index 使用 1-based。
+- index 固定格式為 6 位數、前方補 0。
+- `track_name` 必須保持原始 Artist-visible Track Name。
+- `track_id` 只作為 Canonical internal identity。
+- 不得把 `track_name` 單獨當成 `track_id`。
+- 不得使用 random UUID。
+- 不得依 coordinate proximity 或 frame overlap 推測、合併或重新判定 Track identity。
+- native Track block order 只能用於產生上述 1-based `native_track_index`，不得用來推測兩條不同 Track 為同一 Track identity。
+- 同名 Track 必須保持為不同 Track，不得 merge。
+
 
 Writer：
 
