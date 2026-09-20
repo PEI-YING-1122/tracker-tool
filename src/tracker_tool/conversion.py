@@ -15,12 +15,9 @@ from tracker_tool.canonical import validate_canonical_tracks
 from tracker_tool.config import ShotConfig
 
 
-def convert_tracks(
-    native_text: str,
+def _validate_shot_config(
     shot_config: ShotConfig,
-    *,
-    pftrack_source_role: str | None = None,
-) -> str:
+) -> None:
     required_metadata = (
         shot_config.image_width,
         shot_config.image_height,
@@ -95,6 +92,39 @@ def convert_tracks(
             "INVALID_SHOT_METADATA"
         )
 
+
+def _validate_observation_frame_ranges(
+    tracks,
+    shot_config: ShotConfig,
+) -> None:
+    for track in tracks:
+        for observation in track.observations:
+            if (
+                observation.production_frame
+                < shot_config.production_start_frame
+            ):
+                raise ValueError(
+                    "OBSERVATION_OUTSIDE_SHOT_RANGE"
+                )
+
+            if (
+                shot_config.production_end_frame is not None
+                and observation.production_frame
+                > shot_config.production_end_frame
+            ):
+                raise ValueError(
+                    "OBSERVATION_OUTSIDE_SHOT_RANGE"
+                )
+
+
+def convert_tracks(
+    native_text: str,
+    shot_config: ShotConfig,
+    *,
+    pftrack_source_role: str | None = None,
+) -> str:
+    _validate_shot_config(shot_config)
+
     if (
         shot_config.source_software
         == shot_config.target_software
@@ -128,24 +158,10 @@ def convert_tracks(
 
     validate_canonical_tracks(tracks)
 
-    for track in tracks:
-        for observation in track.observations:
-            if (
-                observation.production_frame
-                < shot_config.production_start_frame
-            ):
-                raise ValueError(
-                    "OBSERVATION_OUTSIDE_SHOT_RANGE"
-                )
-
-            if (
-                shot_config.production_end_frame is not None
-                and observation.production_frame
-                > shot_config.production_end_frame
-            ):
-                raise ValueError(
-                    "OBSERVATION_OUTSIDE_SHOT_RANGE"
-                )
+    _validate_observation_frame_ranges(
+        tracks,
+        shot_config,
+    )
 
     if shot_config.target_software == "3DE_R5":
         return write_3de_tracks(
@@ -171,79 +187,7 @@ def convert_pftrack_source_set(
     usertrack_text: str,
     shot_config: ShotConfig,
 ) -> str:
-    required_metadata = (
-        shot_config.image_width,
-        shot_config.image_height,
-        shot_config.production_start_frame,
-    )
-
-    if any(
-        value is None
-        for value in required_metadata
-    ):
-        raise ValueError(
-            "MISSING_REQUIRED_SHOT_METADATA"
-        )
-
-    if (
-        not isinstance(
-            shot_config.image_width,
-            int,
-        )
-        or isinstance(
-            shot_config.image_width,
-            bool,
-        )
-        or not isinstance(
-            shot_config.image_height,
-            int,
-        )
-        or isinstance(
-            shot_config.image_height,
-            bool,
-        )
-        or not isinstance(
-            shot_config.production_start_frame,
-            int,
-        )
-        or isinstance(
-            shot_config.production_start_frame,
-            bool,
-        )
-        or (
-            shot_config.production_end_frame is not None
-            and (
-                not isinstance(
-                    shot_config.production_end_frame,
-                    int,
-                )
-                or isinstance(
-                    shot_config.production_end_frame,
-                    bool,
-                )
-            )
-        )
-    ):
-        raise ValueError(
-            "INVALID_SHOT_METADATA"
-        )
-
-    if (
-        shot_config.image_width <= 0
-        or shot_config.image_height <= 0
-    ):
-        raise ValueError(
-            "INVALID_SHOT_METADATA"
-        )
-
-    if (
-        shot_config.production_end_frame is not None
-        and shot_config.production_end_frame
-        < shot_config.production_start_frame
-    ):
-        raise ValueError(
-            "INVALID_SHOT_METADATA"
-        )
+    _validate_shot_config(shot_config)
 
     if shot_config.source_software != "PFTRACK_2017":
         raise ValueError(
@@ -265,24 +209,10 @@ def convert_pftrack_source_set(
 
     validate_canonical_tracks(tracks)
 
-    for track in tracks:
-        for observation in track.observations:
-            if (
-                observation.production_frame
-                < shot_config.production_start_frame
-            ):
-                raise ValueError(
-                    "OBSERVATION_OUTSIDE_SHOT_RANGE"
-                )
-
-            if (
-                shot_config.production_end_frame is not None
-                and observation.production_frame
-                > shot_config.production_end_frame
-            ):
-                raise ValueError(
-                    "OBSERVATION_OUTSIDE_SHOT_RANGE"
-                )
+    _validate_observation_frame_ranges(
+        tracks,
+        shot_config,
+    )
 
     if shot_config.target_software == "3DE_R5":
         return write_3de_tracks(
