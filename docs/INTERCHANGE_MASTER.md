@@ -178,6 +178,46 @@ PFTRACK_SOURCE_SET
 
 AutoTrack + UserTrack aggregation 保留既有 Reader 能力，但不納入第一個 orchestration function 的最小實作，後續獨立接入。
 
+### Same-source / Same-target Contract
+
+Conversion Core v1 只允許：
+
+```text
+source_software != target_software
+```
+
+以下 conversion 必須拒絕：
+
+```text
+3DE_R5 → 3DE_R5
+PFTRACK_2017 → PFTRACK_2017
+SYNTHEYES_2304 → SYNTHEYES_2304
+```
+
+原因：
+
+1. v1 定位是不同 tracking software 之間的 interchange。
+2. Canonical v1 不保存所有 native-only metadata。
+3. PFTrack Similarity 不屬 Canonical data，Writer 可產生 synthetic 1.000000。
+4. SynthEyes Outcome 不屬 Canonical data，Writer 使用 deterministic 15。
+5. 因此 same-source parse → Canonical → rewrite 不等於 byte-preserving 或 native-metadata-preserving no-op。
+6. 不得讓使用者誤認 same-source conversion 是原檔無損重存。
+
+如果未來需要：
+
+- native validation
+- native normalization
+- same-format rewrite
+
+必須作為獨立 operation / contract 定義，不得自動視為 interchange conversion。
+
+本次：
+
+- 不定義正式 error code
+- 不定義 error message wording
+- 不修改 CLI contract
+- 不修改其他既有 conversion semantics
+
 不定義 CLI option syntax。CLI command-line argument contract 仍留待後續 wrapper 層定義。
 
 不新增任何 selection / filtering / interpolation / track merge 行為。
