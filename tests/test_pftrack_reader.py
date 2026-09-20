@@ -237,7 +237,7 @@ def test_pftrack_source_set_preserves_multiple_tracks_and_observations():
         (1002, 501.0, 601.0),
     ]
 
-def test_pftrack_source_set_keeps_same_name_tracks_separate():
+def test_pftrack_source_set_rejects_same_visible_name_across_sources():
     autotrack_text = (
         '"Track0001"\n'
         "1\n"
@@ -249,21 +249,14 @@ def test_pftrack_source_set_keeps_same_name_tracks_separate():
         '"Track0001"\n'
         "1\n"
         "1\n"
-        "1001 300.0 400.0 1.000000\n"
+        "1002 300.0 400.0 1.000000\n"
     )
 
-    tracks = read_pftrack_source_set(
-        autotrack_text=autotrack_text,
-        usertrack_text=usertrack_text,
-    )
-
-    assert len(tracks) == 2
-
-    assert tracks[0].track_id == "pf_autotrack::Track0001"
-    assert tracks[1].track_id == "pf_usertrack::Track0001"
-
-    assert tracks[0].track_name == "Track0001"
-    assert tracks[1].track_name == "Track0001"
-
-    assert tracks[0].observations[0].x_pixel == 100.0
-    assert tracks[1].observations[0].x_pixel == 300.0
+    with pytest.raises(
+        ValueError,
+        match="CROSS_SOURCE_TRACK_NAME_COLLISION",
+    ):
+        read_pftrack_source_set(
+            autotrack_text=autotrack_text,
+            usertrack_text=usertrack_text,
+        )

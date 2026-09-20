@@ -1,4 +1,5 @@
 from tracker_tool.adapters.pftrack import (
+    read_pftrack_source_set,
     read_pftrack_tracks,
     write_pftrack_tracks,
 )
@@ -76,6 +77,63 @@ def convert_tracks(
 
     if shot_config.target_software == "PFTRACK_2017":
         return write_pftrack_tracks(tracks)
+
+    if shot_config.target_software == "SYNTHEYES_2304":
+        return write_syntheyes_tracks(
+            tracks,
+            shot_config,
+        )
+
+    raise ValueError(
+        f"Unsupported target software: "
+        f"{shot_config.target_software}"
+    )
+
+def convert_pftrack_source_set(
+    autotrack_text: str,
+    usertrack_text: str,
+    shot_config: ShotConfig,
+) -> str:
+    required_metadata = (
+        shot_config.image_width,
+        shot_config.image_height,
+        shot_config.production_start_frame,
+    )
+
+    if any(
+        value is None
+        for value in required_metadata
+    ):
+        raise ValueError(
+            "MISSING_REQUIRED_SHOT_METADATA"
+        )
+
+    if shot_config.source_software != "PFTRACK_2017":
+        raise ValueError(
+            f"Unsupported source software: "
+            f"{shot_config.source_software}"
+        )
+
+    if (
+        shot_config.source_software
+        == shot_config.target_software
+    ):
+        raise ValueError(
+            "Same-source conversion is not allowed"
+        )
+
+    tracks = read_pftrack_source_set(
+        autotrack_text=autotrack_text,
+        usertrack_text=usertrack_text,
+    )
+
+    validate_canonical_tracks(tracks)
+
+    if shot_config.target_software == "3DE_R5":
+        return write_3de_tracks(
+            tracks,
+            shot_config,
+        )
 
     if shot_config.target_software == "SYNTHEYES_2304":
         return write_syntheyes_tracks(

@@ -1,6 +1,10 @@
 import pytest
+
 from tracker_tool.config import ShotConfig
-from tracker_tool.conversion import convert_tracks
+from tracker_tool.conversion import (
+    convert_pftrack_source_set,
+    convert_tracks,
+)
 
 
 def test_convert_tracks_from_3de_to_pftrack():
@@ -645,5 +649,186 @@ def test_convert_tracks_checks_start_frame_before_native_parsing():
     ):
         convert_tracks(
             native_text,
+            shot_config,
+        )
+
+def test_convert_pftrack_source_set_to_3de():
+    autotrack_text = (
+        '"Auto0001"\n'
+        "1\n"
+        "2\n"
+        "1001 100.0 200.0 1.000000\n"
+        "1003 102.0 202.0 1.000000\n"
+    )
+
+    usertrack_text = (
+        '"User0001"\n'
+        "1\n"
+        "2\n"
+        "1002 300.0 400.0 1.000000\n"
+        "1004 302.0 402.0 1.000000\n"
+    )
+
+    shot_config = ShotConfig(
+        image_width=1920,
+        image_height=1080,
+        production_start_frame=1001,
+        production_end_frame=1100,
+        source_software="PFTRACK_2017",
+        target_software="3DE_R5",
+    )
+
+    output_text = convert_pftrack_source_set(
+        autotrack_text,
+        usertrack_text,
+        shot_config,
+    )
+
+    assert output_text == (
+        "2\n"
+        "Auto0001\n"
+        "0\n"
+        "2\n"
+        "1 100.0 200.0\n"
+        "3 102.0 202.0\n"
+        "User0001\n"
+        "0\n"
+        "2\n"
+        "2 300.0 400.0\n"
+        "4 302.0 402.0\n"
+    )
+
+def test_convert_pftrack_source_set_to_syntheyes():
+    autotrack_text = (
+        '"Auto0001"\n'
+        "1\n"
+        "2\n"
+        "1001 960.0 540.0 1.000000\n"
+        "1003 1440.0 810.0 1.000000\n"
+    )
+
+    usertrack_text = (
+        '"User0001"\n'
+        "1\n"
+        "2\n"
+        "1002 480.0 270.0 1.000000\n"
+        "1004 240.0 135.0 1.000000\n"
+    )
+
+    shot_config = ShotConfig(
+        image_width=1920,
+        image_height=1080,
+        production_start_frame=1001,
+        production_end_frame=1100,
+        source_software="PFTRACK_2017",
+        target_software="SYNTHEYES_2304",
+    )
+
+    output_text = convert_pftrack_source_set(
+        autotrack_text,
+        usertrack_text,
+        shot_config,
+    )
+
+    assert output_text == (
+        "Auto0001 0 0.000000000 0.000000000 15\n"
+        "Auto0001 2 0.500000000 -0.500000000 15\n"
+        "User0001 1 -0.500000000 0.500000000 15\n"
+        "User0001 3 -0.750000000 0.750000000 15\n"
+    )
+
+def test_convert_pftrack_source_set_to_syntheyes():
+    autotrack_text = (
+        '"Auto0001"\n'
+        "1\n"
+        "2\n"
+        "1001 960.0 540.0 1.000000\n"
+        "1003 1440.0 810.0 1.000000\n"
+    )
+
+    usertrack_text = (
+        '"User0001"\n'
+        "1\n"
+        "2\n"
+        "1002 480.0 270.0 1.000000\n"
+        "1004 240.0 135.0 1.000000\n"
+    )
+
+    shot_config = ShotConfig(
+        image_width=1920,
+        image_height=1080,
+        production_start_frame=1001,
+        production_end_frame=1100,
+        source_software="PFTRACK_2017",
+        target_software="SYNTHEYES_2304",
+    )
+
+    output_text = convert_pftrack_source_set(
+        autotrack_text,
+        usertrack_text,
+        shot_config,
+    )
+
+    assert output_text == (
+        "Auto0001 0 0.000000000 0.000000000 15\n"
+        "Auto0001 2 0.500000000 -0.500000000 15\n"
+        "User0001 1 -0.500000000 0.500000000 15\n"
+        "User0001 3 -0.750000000 0.750000000 15\n"
+    )
+
+def test_convert_pftrack_source_set_rejects_cross_source_name_collision():
+    autotrack_text = (
+        '"Track0001"\n'
+        "1\n"
+        "1\n"
+        "1001 100.0 200.0 1.000000\n"
+    )
+
+    usertrack_text = (
+        '"Track0001"\n'
+        "1\n"
+        "1\n"
+        "1002 300.0 400.0 1.000000\n"
+    )
+
+    shot_config = ShotConfig(
+        image_width=1920,
+        image_height=1080,
+        production_start_frame=1001,
+        production_end_frame=1100,
+        source_software="PFTRACK_2017",
+        target_software="3DE_R5",
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="CROSS_SOURCE_TRACK_NAME_COLLISION",
+    ):
+        convert_pftrack_source_set(
+            autotrack_text,
+            usertrack_text,
+            shot_config,
+        )
+
+def test_convert_pftrack_source_set_checks_metadata_before_native_parsing():
+    autotrack_text = "THIS IS NOT VALID PFTRACK DATA"
+    usertrack_text = "THIS IS ALSO NOT VALID PFTRACK DATA"
+
+    shot_config = ShotConfig(
+        image_width=None,
+        image_height=1080,
+        production_start_frame=1001,
+        production_end_frame=1100,
+        source_software="PFTRACK_2017",
+        target_software="3DE_R5",
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="MISSING_REQUIRED_SHOT_METADATA",
+    ):
+        convert_pftrack_source_set(
+            autotrack_text,
+            usertrack_text,
             shot_config,
         )

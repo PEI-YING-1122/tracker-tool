@@ -91,14 +91,29 @@ def read_pftrack_source_set(
     autotrack_text: str,
     usertrack_text: str,
 ) -> list[Track]:
-    autotracks = read_pftrack_tracks(
+    autotrack_tracks = read_pftrack_tracks(
         autotrack_text,
         source_role="AUTOTRACK",
     )
 
-    usertracks = read_pftrack_tracks(
+    usertrack_tracks = read_pftrack_tracks(
         usertrack_text,
         source_role="USERTRACK",
     )
 
-    return autotracks + usertracks
+    autotrack_names = {
+        track.track_name
+        for track in autotrack_tracks
+    }
+
+    usertrack_names = {
+        track.track_name
+        for track in usertrack_tracks
+    }
+
+    if autotrack_names & usertrack_names:
+        raise ValueError(
+            "CROSS_SOURCE_TRACK_NAME_COLLISION"
+        )
+
+    return autotrack_tracks + usertrack_tracks
