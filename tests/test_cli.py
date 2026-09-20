@@ -364,3 +364,318 @@ def test_cli_allows_missing_end_frame(tmp_path):
         "1\n"
         "1001 100.0 200.0 1.000000\n"
     )
+
+def test_cli_converts_pftrack_source_set_to_3de(tmp_path):
+    autotrack_path = tmp_path / "autotrack.txt"
+    usertrack_path = tmp_path / "usertrack.txt"
+    output_path = tmp_path / "output.txt"
+
+    autotrack_path.write_text(
+        '"Auto0001"\n'
+        "1\n"
+        "2\n"
+        "1001 100.0 200.0 1.000000\n"
+        "1003 102.0 202.0 1.000000\n",
+        encoding="utf-8",
+    )
+
+    usertrack_path.write_text(
+        '"User0001"\n'
+        "1\n"
+        "2\n"
+        "1002 300.0 400.0 1.000000\n"
+        "1004 302.0 402.0 1.000000\n",
+        encoding="utf-8",
+    )
+
+    result = main(
+        [
+            "convert-pftrack-source-set",
+            "--autotrack-input",
+            str(autotrack_path),
+            "--usertrack-input",
+            str(usertrack_path),
+            "--target",
+            "3DE_R5",
+            "--output",
+            str(output_path),
+            "--width",
+            "1920",
+            "--height",
+            "1080",
+            "--start-frame",
+            "1001",
+        ]
+    )
+
+    assert result == 0
+
+    assert output_path.read_text(
+        encoding="utf-8",
+    ) == (
+        "2\n"
+        "Auto0001\n"
+        "0\n"
+        "2\n"
+        "1 100.0 200.0\n"
+        "3 102.0 202.0\n"
+        "User0001\n"
+        "0\n"
+        "2\n"
+        "2 300.0 400.0\n"
+        "4 302.0 402.0\n"
+    )
+
+def test_cli_converts_pftrack_source_set_to_syntheyes(tmp_path):
+    autotrack_path = tmp_path / "autotrack.txt"
+    usertrack_path = tmp_path / "usertrack.txt"
+    output_path = tmp_path / "output.txt"
+
+    autotrack_path.write_text(
+        '"Auto0001"\n'
+        "1\n"
+        "2\n"
+        "1001 960.0 540.0 1.000000\n"
+        "1003 1440.0 810.0 1.000000\n",
+        encoding="utf-8",
+    )
+
+    usertrack_path.write_text(
+        '"User0001"\n'
+        "1\n"
+        "2\n"
+        "1002 480.0 270.0 1.000000\n"
+        "1004 240.0 135.0 1.000000\n",
+        encoding="utf-8",
+    )
+
+    result = main(
+        [
+            "convert-pftrack-source-set",
+            "--autotrack-input",
+            str(autotrack_path),
+            "--usertrack-input",
+            str(usertrack_path),
+            "--target",
+            "SYNTHEYES_2304",
+            "--output",
+            str(output_path),
+            "--width",
+            "1920",
+            "--height",
+            "1080",
+            "--start-frame",
+            "1001",
+        ]
+    )
+
+    assert result == 0
+
+    assert output_path.read_text(
+        encoding="utf-8",
+    ) == (
+        "Auto0001 0 0.000000000 0.000000000 15\n"
+        "Auto0001 2 0.500000000 -0.500000000 15\n"
+        "User0001 1 -0.500000000 0.500000000 15\n"
+        "User0001 3 -0.750000000 0.750000000 15\n"
+    )
+
+def test_cli_pftrack_source_set_rejects_cross_source_name_collision(
+    tmp_path,
+):
+    autotrack_path = tmp_path / "autotrack.txt"
+    usertrack_path = tmp_path / "usertrack.txt"
+    output_path = tmp_path / "output.txt"
+
+    autotrack_path.write_text(
+        '"Track0001"\n'
+        "1\n"
+        "1\n"
+        "1001 100.0 200.0 1.000000\n",
+        encoding="utf-8",
+    )
+
+    usertrack_path.write_text(
+        '"Track0001"\n'
+        "1\n"
+        "1\n"
+        "1002 300.0 400.0 1.000000\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="CROSS_SOURCE_TRACK_NAME_COLLISION",
+    ):
+        main(
+            [
+                "convert-pftrack-source-set",
+                "--autotrack-input",
+                str(autotrack_path),
+                "--usertrack-input",
+                str(usertrack_path),
+                "--target",
+                "3DE_R5",
+                "--output",
+                str(output_path),
+                "--width",
+                "1920",
+                "--height",
+                "1080",
+                "--start-frame",
+                "1001",
+            ]
+        )
+
+    assert not output_path.exists()
+
+def test_cli_pftrack_source_set_rejects_pftrack_target(
+    tmp_path,
+):
+    autotrack_path = tmp_path / "autotrack.txt"
+    usertrack_path = tmp_path / "usertrack.txt"
+    output_path = tmp_path / "output.txt"
+
+    autotrack_path.write_text(
+        '"Auto0001"\n'
+        "1\n"
+        "1\n"
+        "1001 100.0 200.0 1.000000\n",
+        encoding="utf-8",
+    )
+
+    usertrack_path.write_text(
+        '"User0001"\n'
+        "1\n"
+        "1\n"
+        "1002 300.0 400.0 1.000000\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError):
+        main(
+            [
+                "convert-pftrack-source-set",
+                "--autotrack-input",
+                str(autotrack_path),
+                "--usertrack-input",
+                str(usertrack_path),
+                "--target",
+                "PFTRACK_2017",
+                "--output",
+                str(output_path),
+                "--width",
+                "1920",
+                "--height",
+                "1080",
+                "--start-frame",
+                "1001",
+            ]
+        )
+
+    assert not output_path.exists()
+
+def test_cli_pftrack_source_set_rejects_missing_required_metadata(
+    tmp_path,
+):
+    autotrack_path = tmp_path / "autotrack.txt"
+    usertrack_path = tmp_path / "usertrack.txt"
+    output_path = tmp_path / "output.txt"
+
+    autotrack_path.write_text(
+        '"Auto0001"\n'
+        "1\n"
+        "1\n"
+        "1001 100.0 200.0 1.000000\n",
+        encoding="utf-8",
+    )
+
+    usertrack_path.write_text(
+        '"User0001"\n'
+        "1\n"
+        "1\n"
+        "1002 300.0 400.0 1.000000\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(SystemExit):
+        main(
+            [
+                "convert-pftrack-source-set",
+                "--autotrack-input",
+                str(autotrack_path),
+                "--usertrack-input",
+                str(usertrack_path),
+                "--target",
+                "3DE_R5",
+                "--output",
+                str(output_path),
+                "--height",
+                "1080",
+                "--start-frame",
+                "1001",
+                # 故意缺 --width
+            ]
+        )
+
+    assert not output_path.exists()
+
+def test_cli_pftrack_source_set_allows_missing_end_frame(
+    tmp_path,
+):
+    autotrack_path = tmp_path / "autotrack.txt"
+    usertrack_path = tmp_path / "usertrack.txt"
+    output_path = tmp_path / "output.txt"
+
+    autotrack_path.write_text(
+        '"Auto0001"\n'
+        "1\n"
+        "1\n"
+        "1001 100.0 200.0 1.000000\n",
+        encoding="utf-8",
+    )
+
+    usertrack_path.write_text(
+        '"User0001"\n'
+        "1\n"
+        "1\n"
+        "1002 300.0 400.0 1.000000\n",
+        encoding="utf-8",
+    )
+
+    result = main(
+        [
+            "convert-pftrack-source-set",
+            "--autotrack-input",
+            str(autotrack_path),
+            "--usertrack-input",
+            str(usertrack_path),
+            "--target",
+            "3DE_R5",
+            "--output",
+            str(output_path),
+            "--width",
+            "1920",
+            "--height",
+            "1080",
+            "--start-frame",
+            "1001",
+            # 故意不提供 --end-frame
+        ]
+    )
+
+    assert result == 0
+
+    assert output_path.read_text(
+        encoding="utf-8",
+    ) == (
+        "2\n"
+        "Auto0001\n"
+        "0\n"
+        "1\n"
+        "1 100.0 200.0\n"
+        "User0001\n"
+        "0\n"
+        "1\n"
+        "2 300.0 400.0\n"
+    )

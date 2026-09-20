@@ -758,3 +758,61 @@ The CLI reads native text from --input.
 The CLI writes target-native text to --output.
 
 The conversion core itself remains text-based and does not own file I/O.
+
+### PFTrack Source Set CLI
+
+PFTrack AutoTrack + UserTrack source-set conversion uses:
+
+tracker-tool convert-pftrack-source-set
+
+Required arguments:
+
+--autotrack-input
+--usertrack-input
+--target
+--output
+--width
+--height
+--start-frame
+
+Optional arguments:
+
+--end-frame
+
+The source software is implicitly:
+
+PFTRACK_2017
+
+The source roles are fixed by input:
+
+--autotrack-input = AUTOTRACK
+--usertrack-input = USERTRACK
+
+The CLI must not require or accept a generic source-role value for this command.
+
+Valid targets:
+
+3DE_R5
+SYNTHEYES_2304
+
+PFTRACK_2017 is not a valid target because same-source conversion is not allowed.
+
+The CLI reads both native PFTrack files, passes their native text to the existing PFTrack source-set conversion orchestration, and writes the target-native result to --output.
+
+The CLI must not merge tracks or reinterpret PFTrack source identity.
+
+Cross-source visible Track Name collision remains:
+
+CROSS_SOURCE_TRACK_NAME_COLLISION
+
+If conversion fails, the output file must not be created.
+
+Required metadata behavior is identical to single-source conversion:
+
+image_width
+image_height
+production_start_frame
+
+are required.
+
+production_end_frame is optional.
