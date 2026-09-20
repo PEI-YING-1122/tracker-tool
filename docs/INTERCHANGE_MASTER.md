@@ -701,3 +701,60 @@ Artist-created 2D Track Core Interchange
 ```
 
 不得將此結論延伸至 v1 Scope 外的 Camera / Lens / Survey / 3D / Object Tracking 等資料。
+
+
+## CLI Contract
+
+### Command
+
+Single-source conversion uses:
+
+tracker-tool convert
+
+### Required arguments
+
+--source
+--target
+--input
+--output
+--width
+--height
+--start-frame
+
+### Optional arguments
+
+--end-frame
+
+PFTrack source additionally requires:
+
+--pftrack-source-role AUTOTRACK
+or
+--pftrack-source-role USERTRACK
+
+### Software identifiers
+
+Only the following values are valid:
+
+3DE_R5
+PFTRACK_2017
+SYNTHEYES_2304
+
+Aliases are not accepted.
+
+### Same-source conversion
+
+Source and target must differ.
+
+### Metadata
+
+width, height, and start-frame are required.
+
+end-frame is optional.
+
+### Input / Output
+
+The CLI reads native text from --input.
+
+The CLI writes target-native text to --output.
+
+The conversion core itself remains text-based and does not own file I/O.

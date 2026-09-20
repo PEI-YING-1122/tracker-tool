@@ -1,2 +1,6 @@
-def main() -> None:
-    print("Hello from tracker-tool!")
+from tracker_tool.cli import main
+
+
+__all__ = [
+    "main",
+]
