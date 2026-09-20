@@ -214,6 +214,50 @@ Rules：
 - track_id 只作 Canonical internal identity。
 - Writer 仍輸出 Canonical.track_name，而不是 Canonical.track_id。
 
+### Target Name Representability
+
+SynthEyes Tracker 2-D Paths 使用 whitespace-delimited row grammar：
+
+```text
+<TRACKER_NAME> <FRAME> <U> <V> <OUTCOME>
+
+因此 Target Writer 不可輸出包含 whitespace 的 Canonical.track_name。
+
+例如以下名稱無法由目前 verified v1 grammar 無損表示：
+
+Point 001
+Track	A
+
+Writer 不得：
+
+rename
+replace whitespace with underscore
+trim
+quote the name
+escape into an unverified private syntax
+
+如果 Canonical.track_name 包含任何 whitespace，SynthEyes Writer 必須拒絕輸出。
+
+### Target Name Collision
+
+SynthEyes Tracker 2-D Paths 使用 exact `TRACKER_NAME` 作為 Track grouping key。
+
+因此兩條不同 Canonical Tracks 不可輸出相同的 `track_name`。
+
+例如：
+
+```text
+track_id   = track::A
+track_name = Point0001
+
+track_id   = track::B
+track_name = Point0001
+
+若直接輸出 SynthEyes，兩條 Track 將無法維持獨立 identity。
+
+v1 不執行 automatic rename 或 target name mapping。
+
+如果不同 Canonical Tracks 具有相同 track_name，SynthEyes Writer 必須拒絕輸出。
 
 ---
 

@@ -397,7 +397,10 @@ def test_convert_tracks_rejects_unknown_source_software():
         target_software="PFTRACK_2017",
     )
 
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match="UNSUPPORTED_SOURCE_SOFTWARE",
+    ):
         convert_tracks(
             native_text,
             shot_config,
@@ -421,7 +424,10 @@ def test_convert_tracks_rejects_unknown_target_software():
         target_software="PFTRACK",
     )
 
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match="UNSUPPORTED_TARGET_SOFTWARE",
+    ):
         convert_tracks(
             native_text,
             shot_config,
@@ -445,7 +451,10 @@ def test_convert_tracks_rejects_3de_to_3de():
         target_software="3DE_R5",
     )
 
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match="SAME_SOURCE_CONVERSION_NOT_ALLOWED",
+    ):
         convert_tracks(
             native_text,
             shot_config,
@@ -469,7 +478,10 @@ def test_convert_tracks_rejects_pftrack_to_pftrack():
         target_software="PFTRACK_2017",
     )
 
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match="SAME_SOURCE_CONVERSION_NOT_ALLOWED",
+    ):
         convert_tracks(
             native_text,
             shot_config,
@@ -491,7 +503,10 @@ def test_convert_tracks_rejects_syntheyes_to_syntheyes():
         target_software="SYNTHEYES_2304",
     )
 
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match="SAME_SOURCE_CONVERSION_NOT_ALLOWED",
+    ):
         convert_tracks(
             native_text,
             shot_config,
@@ -737,45 +752,6 @@ def test_convert_pftrack_source_set_to_syntheyes():
         "User0001 3 -0.750000000 0.750000000 15\n"
     )
 
-def test_convert_pftrack_source_set_to_syntheyes():
-    autotrack_text = (
-        '"Auto0001"\n'
-        "1\n"
-        "2\n"
-        "1001 960.0 540.0 1.000000\n"
-        "1003 1440.0 810.0 1.000000\n"
-    )
-
-    usertrack_text = (
-        '"User0001"\n'
-        "1\n"
-        "2\n"
-        "1002 480.0 270.0 1.000000\n"
-        "1004 240.0 135.0 1.000000\n"
-    )
-
-    shot_config = ShotConfig(
-        image_width=1920,
-        image_height=1080,
-        production_start_frame=1001,
-        production_end_frame=1100,
-        source_software="PFTRACK_2017",
-        target_software="SYNTHEYES_2304",
-    )
-
-    output_text = convert_pftrack_source_set(
-        autotrack_text,
-        usertrack_text,
-        shot_config,
-    )
-
-    assert output_text == (
-        "Auto0001 0 0.000000000 0.000000000 15\n"
-        "Auto0001 2 0.500000000 -0.500000000 15\n"
-        "User0001 1 -0.500000000 0.500000000 15\n"
-        "User0001 3 -0.750000000 0.750000000 15\n"
-    )
-
 def test_convert_pftrack_source_set_rejects_cross_source_name_collision():
     autotrack_text = (
         '"Track0001"\n'
@@ -810,6 +786,108 @@ def test_convert_pftrack_source_set_rejects_cross_source_name_collision():
             shot_config,
         )
 
+def test_convert_pftrack_source_set_rejects_same_source_conversion():
+    autotrack_text = (
+        '"Auto_A"\n'
+        "1\n"
+        "1\n"
+        "1001 100.0 200.0 1.000000\n"
+    )
+
+    usertrack_text = (
+        '"User_A"\n'
+        "1\n"
+        "1\n"
+        "1001 300.0 400.0 1.000000\n"
+    )
+
+    shot_config = ShotConfig(
+        image_width=1920,
+        image_height=1080,
+        production_start_frame=1001,
+        production_end_frame=None,
+        source_software="PFTRACK_2017",
+        target_software="PFTRACK_2017",
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="SAME_SOURCE_CONVERSION_NOT_ALLOWED",
+    ):
+        convert_pftrack_source_set(
+            autotrack_text,
+            usertrack_text,
+            shot_config,
+        )
+
+def test_convert_pftrack_source_set_rejects_unsupported_source_software():
+    autotrack_text = (
+        '"Auto_A"\n'
+        "1\n"
+        "1\n"
+        "1001 100.0 200.0 1.000000\n"
+    )
+
+    usertrack_text = (
+        '"User_A"\n'
+        "1\n"
+        "1\n"
+        "1001 300.0 400.0 1.000000\n"
+    )
+
+    shot_config = ShotConfig(
+        image_width=1920,
+        image_height=1080,
+        production_start_frame=1001,
+        production_end_frame=None,
+        source_software="PFTRACK",
+        target_software="3DE_R5",
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="UNSUPPORTED_SOURCE_SOFTWARE",
+    ):
+        convert_pftrack_source_set(
+            autotrack_text,
+            usertrack_text,
+            shot_config,
+        )
+
+def test_convert_pftrack_source_set_rejects_unsupported_target_software():
+    autotrack_text = (
+        '"Auto_A"\n'
+        "1\n"
+        "1\n"
+        "1001 100.0 200.0 1.000000\n"
+    )
+
+    usertrack_text = (
+        '"User_A"\n'
+        "1\n"
+        "1\n"
+        "1001 300.0 400.0 1.000000\n"
+    )
+
+    shot_config = ShotConfig(
+        image_width=1920,
+        image_height=1080,
+        production_start_frame=1001,
+        production_end_frame=None,
+        source_software="PFTRACK_2017",
+        target_software="UNKNOWN_TARGET",
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="UNSUPPORTED_TARGET_SOFTWARE",
+    ):
+        convert_pftrack_source_set(
+            autotrack_text,
+            usertrack_text,
+            shot_config,
+        )
+
 def test_convert_pftrack_source_set_checks_metadata_before_native_parsing():
     autotrack_text = "THIS IS NOT VALID PFTRACK DATA"
     usertrack_text = "THIS IS ALSO NOT VALID PFTRACK DATA"
@@ -826,6 +904,535 @@ def test_convert_pftrack_source_set_checks_metadata_before_native_parsing():
     with pytest.raises(
         ValueError,
         match="MISSING_REQUIRED_SHOT_METADATA",
+    ):
+        convert_pftrack_source_set(
+            autotrack_text,
+            usertrack_text,
+            shot_config,
+        )
+
+def test_convert_tracks_rejects_non_positive_image_width():
+    native_text = (
+        "1\n"
+        "Point0001\n"
+        "0\n"
+        "1\n"
+        "1 100.0 200.0\n"
+    )
+
+    shot_config = ShotConfig(
+        image_width=0,
+        image_height=1080,
+        production_start_frame=1001,
+        production_end_frame=1100,
+        source_software="3DE_R5",
+        target_software="PFTRACK_2017",
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="INVALID_SHOT_METADATA",
+    ):
+        convert_tracks(
+            native_text,
+            shot_config,
+        )
+
+def test_convert_tracks_rejects_non_positive_image_height():
+    native_text = (
+        "1\n"
+        "Point0001\n"
+        "0\n"
+        "1\n"
+        "1 100.0 200.0\n"
+    )
+
+    shot_config = ShotConfig(
+        image_width=1920,
+        image_height=-1080,
+        production_start_frame=1001,
+        production_end_frame=1100,
+        source_software="3DE_R5",
+        target_software="PFTRACK_2017",
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="INVALID_SHOT_METADATA",
+    ):
+        convert_tracks(
+            native_text,
+            shot_config,
+        )
+
+def test_convert_tracks_allows_zero_production_start_frame():
+    native_text = (
+        "1\n"
+        "Point0001\n"
+        "0\n"
+        "1\n"
+        "1 100.0 200.0\n"
+    )
+
+    shot_config = ShotConfig(
+        image_width=1920,
+        image_height=1080,
+        production_start_frame=0,
+        production_end_frame=None,
+        source_software="3DE_R5",
+        target_software="PFTRACK_2017",
+    )
+
+    output_text = convert_tracks(
+        native_text,
+        shot_config,
+    )
+
+    assert output_text == (
+        '"Point0001"\n'
+        "1\n"
+        "1\n"
+        "0 100.0 200.0 1.000000\n"
+    )
+
+def test_convert_tracks_allows_negative_production_start_frame():
+    native_text = (
+        "1\n"
+        "Point0001\n"
+        "0\n"
+        "1\n"
+        "1 100.0 200.0\n"
+    )
+
+    shot_config = ShotConfig(
+        image_width=1920,
+        image_height=1080,
+        production_start_frame=-10,
+        production_end_frame=None,
+        source_software="3DE_R5",
+        target_software="PFTRACK_2017",
+    )
+
+    output_text = convert_tracks(
+        native_text,
+        shot_config,
+    )
+
+    assert output_text == (
+        '"Point0001"\n'
+        "1\n"
+        "1\n"
+        "-10 100.0 200.0 1.000000\n"
+    )
+
+def test_convert_tracks_rejects_end_frame_before_start_frame():
+    native_text = (
+        "1\n"
+        "Point0001\n"
+        "0\n"
+        "1\n"
+        "1 100.0 200.0\n"
+    )
+
+    shot_config = ShotConfig(
+        image_width=1920,
+        image_height=1080,
+        production_start_frame=1001,
+        production_end_frame=1000,
+        source_software="3DE_R5",
+        target_software="PFTRACK_2017",
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="INVALID_SHOT_METADATA",
+    ):
+        convert_tracks(
+            native_text,
+            shot_config,
+        )
+
+def test_convert_tracks_allows_end_frame_equal_to_start_frame():
+    native_text = (
+        "1\n"
+        "Point0001\n"
+        "0\n"
+        "1\n"
+        "1 100.0 200.0\n"
+    )
+
+    shot_config = ShotConfig(
+        image_width=1920,
+        image_height=1080,
+        production_start_frame=1001,
+        production_end_frame=1001,
+        source_software="3DE_R5",
+        target_software="PFTRACK_2017",
+    )
+
+    output_text = convert_tracks(
+        native_text,
+        shot_config,
+    )
+
+    assert output_text == (
+        '"Point0001"\n'
+        "1\n"
+        "1\n"
+        "1001 100.0 200.0 1.000000\n"
+    )
+
+def test_convert_pftrack_source_set_rejects_end_frame_before_start_frame():
+    autotrack_text = (
+        '"Auto_A"\n'
+        "1\n"
+        "1\n"
+        "1001 100.0 200.0 1.000000\n"
+    )
+
+    usertrack_text = (
+        '"User_A"\n'
+        "1\n"
+        "1\n"
+        "1001 300.0 400.0 1.000000\n"
+    )
+
+    shot_config = ShotConfig(
+        image_width=1920,
+        image_height=1080,
+        production_start_frame=1001,
+        production_end_frame=1000,
+        source_software="PFTRACK_2017",
+        target_software="3DE_R5",
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="INVALID_SHOT_METADATA",
+    ):
+        convert_pftrack_source_set(
+            autotrack_text,
+            usertrack_text,
+            shot_config,
+        )
+
+@pytest.mark.parametrize(
+    "image_width,image_height",
+    [
+        ("1920", 1080),
+        (1920.0, 1080),
+        (True, 1080),
+        (1920, "1080"),
+        (1920, 1080.0),
+        (1920, False),
+    ],
+)
+def test_convert_tracks_rejects_invalid_dimension_types(
+    image_width,
+    image_height,
+):
+    native_text = (
+        "1\n"
+        "Point0001\n"
+        "0\n"
+        "1\n"
+        "1 100.0 200.0\n"
+    )
+
+    shot_config = ShotConfig(
+        image_width=image_width,
+        image_height=image_height,
+        production_start_frame=1001,
+        production_end_frame=None,
+        source_software="3DE_R5",
+        target_software="PFTRACK_2017",
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="INVALID_SHOT_METADATA",
+    ):
+        convert_tracks(
+            native_text,
+            shot_config,
+        )
+
+@pytest.mark.parametrize(
+    "production_start_frame,production_end_frame",
+    [
+        ("1001", None),
+        (1001.0, None),
+        (True, None),
+        (1001, "1100"),
+        (1001, 1100.0),
+        (1001, False),
+    ],
+)
+def test_convert_tracks_rejects_invalid_frame_metadata_types(
+    production_start_frame,
+    production_end_frame,
+):
+    native_text = (
+        "1\n"
+        "Point0001\n"
+        "0\n"
+        "1\n"
+        "1 100.0 200.0\n"
+    )
+
+    shot_config = ShotConfig(
+        image_width=1920,
+        image_height=1080,
+        production_start_frame=production_start_frame,
+        production_end_frame=production_end_frame,
+        source_software="3DE_R5",
+        target_software="PFTRACK_2017",
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="INVALID_SHOT_METADATA",
+    ):
+        convert_tracks(
+            native_text,
+            shot_config,
+        )
+
+@pytest.mark.parametrize(
+    "image_width,image_height",
+    [
+        ("1920", 1080),
+        (1920, False),
+    ],
+)
+def test_convert_pftrack_source_set_rejects_invalid_dimension_types(
+    image_width,
+    image_height,
+):
+    autotrack_text = (
+        '"Auto_A"\n'
+        "1\n"
+        "1\n"
+        "1001 100.0 200.0 1.000000\n"
+    )
+
+    usertrack_text = (
+        '"User_A"\n'
+        "1\n"
+        "1\n"
+        "1001 300.0 400.0 1.000000\n"
+    )
+
+    shot_config = ShotConfig(
+        image_width=image_width,
+        image_height=image_height,
+        production_start_frame=1001,
+        production_end_frame=None,
+        source_software="PFTRACK_2017",
+        target_software="3DE_R5",
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="INVALID_SHOT_METADATA",
+    ):
+        convert_pftrack_source_set(
+            autotrack_text,
+            usertrack_text,
+            shot_config,
+        )
+
+@pytest.mark.parametrize(
+    "production_start_frame,production_end_frame",
+    [
+        ("1001", None),
+        (1001, True),
+    ],
+)
+def test_convert_pftrack_source_set_rejects_invalid_frame_metadata_types(
+    production_start_frame,
+    production_end_frame,
+):
+    autotrack_text = (
+        '"Auto_A"\n'
+        "1\n"
+        "1\n"
+        "1001 100.0 200.0 1.000000\n"
+    )
+
+    usertrack_text = (
+        '"User_A"\n'
+        "1\n"
+        "1\n"
+        "1001 300.0 400.0 1.000000\n"
+    )
+
+    shot_config = ShotConfig(
+        image_width=1920,
+        image_height=1080,
+        production_start_frame=production_start_frame,
+        production_end_frame=production_end_frame,
+        source_software="PFTRACK_2017",
+        target_software="3DE_R5",
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="INVALID_SHOT_METADATA",
+    ):
+        convert_pftrack_source_set(
+            autotrack_text,
+            usertrack_text,
+            shot_config,
+        )
+
+def test_convert_tracks_rejects_observation_before_start_frame():
+    native_text = (
+        '"Point0001"\n'
+        "1\n"
+        "1\n"
+        "1000 100.0 200.0 1.000000\n"
+    )
+
+    shot_config = ShotConfig(
+        image_width=1920,
+        image_height=1080,
+        production_start_frame=1001,
+        production_end_frame=1100,
+        source_software="PFTRACK_2017",
+        target_software="3DE_R5",
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="OBSERVATION_OUTSIDE_SHOT_RANGE",
+    ):
+        convert_tracks(
+            native_text,
+            shot_config,
+            pftrack_source_role="AUTOTRACK",
+        )
+
+def test_convert_tracks_rejects_observation_after_end_frame():
+    native_text = (
+        '"Point0001"\n'
+        "1\n"
+        "1\n"
+        "1101 100.0 200.0 1.000000\n"
+    )
+
+    shot_config = ShotConfig(
+        image_width=1920,
+        image_height=1080,
+        production_start_frame=1001,
+        production_end_frame=1100,
+        source_software="PFTRACK_2017",
+        target_software="3DE_R5",
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="OBSERVATION_OUTSIDE_SHOT_RANGE",
+    ):
+        convert_tracks(
+            native_text,
+            shot_config,
+            pftrack_source_role="AUTOTRACK",
+        )
+
+@pytest.mark.parametrize(
+    "production_frame",
+    [
+        1001,
+        1100,
+    ],
+)
+def test_convert_tracks_allows_observation_on_shot_range_boundary(
+    production_frame,
+):
+    native_text = (
+        '"Point0001"\n'
+        "1\n"
+        "1\n"
+        f"{production_frame} 100.0 200.0 1.000000\n"
+    )
+
+    shot_config = ShotConfig(
+        image_width=1920,
+        image_height=1080,
+        production_start_frame=1001,
+        production_end_frame=1100,
+        source_software="PFTRACK_2017",
+        target_software="3DE_R5",
+    )
+
+    convert_tracks(
+        native_text,
+        shot_config,
+        pftrack_source_role="AUTOTRACK",
+    )
+
+def test_convert_pftrack_source_set_rejects_observation_before_start_frame():
+    autotrack_text = (
+        '"Auto_A"\n'
+        "1\n"
+        "1\n"
+        "1000 100.0 200.0 1.000000\n"
+    )
+
+    usertrack_text = (
+        '"User_A"\n'
+        "1\n"
+        "1\n"
+        "1001 300.0 400.0 1.000000\n"
+    )
+
+    shot_config = ShotConfig(
+        image_width=1920,
+        image_height=1080,
+        production_start_frame=1001,
+        production_end_frame=1100,
+        source_software="PFTRACK_2017",
+        target_software="3DE_R5",
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="OBSERVATION_OUTSIDE_SHOT_RANGE",
+    ):
+        convert_pftrack_source_set(
+            autotrack_text,
+            usertrack_text,
+            shot_config,
+        )
+
+def test_convert_pftrack_source_set_rejects_observation_after_end_frame():
+    autotrack_text = (
+        '"Auto_A"\n'
+        "1\n"
+        "1\n"
+        "1001 100.0 200.0 1.000000\n"
+    )
+
+    usertrack_text = (
+        '"User_A"\n'
+        "1\n"
+        "1\n"
+        "1101 300.0 400.0 1.000000\n"
+    )
+
+    shot_config = ShotConfig(
+        image_width=1920,
+        image_height=1080,
+        production_start_frame=1001,
+        production_end_frame=1100,
+        source_software="PFTRACK_2017",
+        target_software="3DE_R5",
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="OBSERVATION_OUTSIDE_SHOT_RANGE",
     ):
         convert_pftrack_source_set(
             autotrack_text,

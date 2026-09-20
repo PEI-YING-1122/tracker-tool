@@ -247,38 +247,6 @@ def test_3de_reader_rejects_non_finite_coordinates(
     with pytest.raises(ValueError):
         read_3de_tracks(native_text, shot_config)
 
-@pytest.mark.parametrize(
-    "x_text,y_text",
-    [
-        ("nan", "200.0"),
-        ("inf", "200.0"),
-        ("100.0", "-inf"),
-    ],
-)
-def test_3de_reader_rejects_non_finite_coordinates(
-    x_text,
-    y_text,
-):
-    native_text = (
-        "1\n"
-        "Point0001\n"
-        "0\n"
-        "1\n"
-        f"1 {x_text} {y_text}\n"
-    )
-
-    shot_config = ShotConfig(
-        image_width=4096,
-        image_height=2160,
-        production_start_frame=1001,
-        production_end_frame=1227,
-        source_software="3DEqualizer R5",
-        target_software="PFTrack 2017",
-    )
-
-    with pytest.raises(ValueError):
-        read_3de_tracks(native_text, shot_config)
-
 def test_3de_reader_rejects_duplicate_frame_within_same_track():
     native_text = (
         "1\n"

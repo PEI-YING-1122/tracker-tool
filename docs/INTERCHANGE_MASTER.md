@@ -163,21 +163,6 @@ AUTOTRACK / USERTRACK
 
 不得進入 Canonical track semantics。
 
-Step 11 第一版 single-source contract：
-
-先支援：
-
-- 3DE_R5 single source
-- PFTRACK_2017 AUTOTRACK single source
-- PFTRACK_2017 USERTRACK single source
-- SYNTHEYES_2304 single source
-
-```text
-PFTRACK_SOURCE_SET
-```
-
-AutoTrack + UserTrack aggregation 保留既有 Reader 能力，但不納入第一個 orchestration function 的最小實作，後續獨立接入。
-
 ### Same-source / Same-target Contract
 
 Conversion Core v1 只允許：
@@ -211,18 +196,7 @@ SYNTHEYES_2304 → SYNTHEYES_2304
 
 必須作為獨立 operation / contract 定義，不得自動視為 interchange conversion。
 
-本次：
-
-- 不定義正式 error code
-- 不定義 error message wording
-- 不修改 CLI contract
-- 不修改其他既有 conversion semantics
-
-不定義 CLI option syntax。CLI command-line argument contract 仍留待後續 wrapper 層定義。
-
-不新增任何 selection / filtering / interpolation / track merge 行為。
-
-本次不要定義 file path IO contract。Conversion Core 先以 native text 作為 input/output，file reading/writing 留給 CLI/application layer。
+v1 不新增任何 selection / filtering / interpolation / track merge 行為。
 
 ---
 ## 4. Lossless Interchange Principle
@@ -344,36 +318,68 @@ Required metadata 不代表必須由 Artist 手動輸入。
 MISSING_REQUIRED_SHOT_METADATA
 ```
 
+### Production Frame Range Validity
+
+`production_end_frame` remains optional.
+
+When `production_end_frame` is unknown, it may be `None`.
+
+When `production_end_frame` is explicitly provided, it must not be earlier than `production_start_frame`.
+
+Valid examples:
+
+- `production_start_frame = 1001`, `production_end_frame = 1100`
+- `production_start_frame = 1001`, `production_end_frame = 1001`
+- `production_start_frame = -10`, `production_end_frame = -1`
+- `production_start_frame = 1001`, `production_end_frame = None`
+
+Invalid example:
+
+- `production_start_frame = 1001`, `production_end_frame = 1000`
+
+v1 does not require production frame numbers to be positive.
+
 ---
 
 ## 7. Same Image Geometry Contract
 
-Resolution-independent 的正確定義：
+v1 conversion 的前提是：
 
-> Source 與 Target 必須描述相同的 image geometry。
+> Source Track Data 與 Target Software 必須對應相同的 image geometry。
 
-如果兩邊存在：
+例如不得在未提供明確 geometry transform 的情況下，直接跨以下 plate geometry 使用 Track：
 
 - Resize
 - Crop
-- Proxy
+- Proxy with different resolution / framing
 - Overscan
 - Reformat
 - Different plate geometry
 
-v1 不做自動補償。
+v1 不執行：
 
-必須：
+- automatic X/Y scaling
+- crop compensation
+- reformat compensation
+- overscan compensation
+- image geometry inference
+
+目前 v1 的 `ShotConfig` 只提供 conversion 使用的 resolved image width / height，並沒有同時保存 Source Geometry 與 Target Geometry 的完整描述。
+
+因此 v1 不宣稱能自動偵測所有 image geometry mismatch。
+
+呼叫端 / Artist / Pipeline 必須確保提供的：
 
 ```text
-IMAGE_GEOMETRY_MISMATCH
+image_width
+image_height
 ```
 
-並停止。
-
-禁止 silent scaling X/Y。
+對應實際 conversion 所使用的 same image geometry。
 
 禁止從 Track coordinate extrema 推測 resolution。
+
+若未來需要自動偵測不同 Source / Target Geometry，必須另行擴充 ShotConfig 與 geometry transform contract。
 
 ---
 
@@ -396,7 +402,68 @@ X/Y = direct pixel pass-through
 
 SynthEyes 由 Adapter 負責 normalized U/V conversion。
 
+### Canonical Coordinate Validity
+
+`x_pixel` and `y_pixel` must be numeric finite values.
+
+Accepted numeric types in v1 are integer and floating-point values.
+
+Boolean values are not valid coordinates, even though Python treats `bool` as a subclass of `int`.
+
+Invalid examples:
+
+- `x_pixel = True`
+- `y_pixel = False`
+- non-numeric strings
+- `NaN`
+- positive or negative infinity
+
+Canonical validation does not require coordinates to remain inside the image bounds.
+
+Negative coordinates and coordinates outside `image_width` / `image_height` may represent valid off-screen tracking observations and must not be rejected solely for being outside the image.
+
+### Canonical Track Collection Requirement
+
+A Canonical interchange collection must contain at least one Track.
+
+An empty Track collection is invalid Canonical interchange data.
+
+Invalid example:
+
+```text
+tracks = []
+
+The v1 interchange tool is intended to convert actual 2D tracking data.
+
+A conversion containing no Tracks must fail instead of silently producing an empty or zero-track target output.
+
+The v1 interchange contract therefore requires:
+
+len(tracks) >= 1
+
 ---
+
+### Observation Frame Range Validity
+
+Canonical observations produced for a conversion must remain within the resolved production frame range of the shot.
+
+Each observation must satisfy:
+
+`production_frame >= production_start_frame`
+
+When `production_end_frame` is explicitly available, each observation must also satisfy:
+
+`production_frame <= production_end_frame`
+
+Therefore:
+
+`production_start_frame <= production_frame <= production_end_frame`
+
+when the end frame is known.
+
+When `production_end_frame` is `None`, v1 must not infer an end frame from observation extrema.
+
+Production frame values are not required to be positive. Negative frame ranges remain valid when they are part of the resolved ShotConfig.
 
 ## 9. Production Frame Principle
 
@@ -405,6 +472,21 @@ Canonical 儲存：
 ```text
 actual production frame
 ```
+### Canonical Production Frame Validity
+
+Each Canonical observation `production_frame` must be an integer.
+
+The Canonical layer must reject non-integer frame values.
+
+Examples of invalid values include:
+
+- floating-point frame values
+- string frame values
+- `None`
+
+v1 does not require `production_frame` to be greater than zero.
+
+Zero and negative integer frame values remain valid.
 
 不同軟體 frame mapping 由各 Adapter 負責。
 
@@ -420,6 +502,20 @@ Canonical 必須區分：
 track_id
 track_name
 ```
+### Canonical Track Identity Validity
+
+`track_id` and `track_name` must be strings.
+
+They must also be non-empty.
+
+Invalid examples:
+
+- `track_id == ""`
+- `track_name == ""`
+
+v1 does not trim or normalize Track Names.
+
+Whitespace normalization is not part of this rule.
 
 `track_id`：
 
@@ -462,8 +558,32 @@ documented
 
 的 Target Name Mapping。
 
----
+### Canonical Observation Requirement
 
+Each Canonical Track must contain at least one observation.
+
+An empty Track is invalid Canonical interchange data.
+
+Invalid example:
+
+```text
+Track {
+    track_id: "track-001"
+    track_name: "Track001"
+    observations: []
+}
+
+Reason:
+
+A zero-observation Track cannot be represented consistently across all supported target native formats.
+
+In particular, SynthEyes tracker identity is represented through observation rows, so a Track with no observations cannot preserve its visible Track Name during serialization.
+
+The v1 interchange contract therefore requires:
+
+len(track.observations) >= 1
+
+---
 ## 11. Multi-source PFTrack Rule
 
 PFTrack workflow 可能需要分別輸出：
@@ -705,6 +825,17 @@ Artist-created 2D Track Core Interchange
 
 ## CLI Contract
 
+### Existing Output Preservation
+
+CLI output must only be written after conversion completes successfully.
+
+If conversion fails:
+
+- a new output file must not be created
+- an existing output file must not be modified, truncated, or deleted
+
+Failure must preserve any pre-existing output file exactly as it was before the attempted conversion.
+
 ### Command
 
 Single-source conversion uses:
@@ -758,6 +889,26 @@ The CLI reads native text from --input.
 The CLI writes target-native text to --output.
 
 The conversion core itself remains text-based and does not own file I/O.
+
+### Input / Output Path Safety
+
+CLI output must not refer to the same resolved file path as any source input file.
+
+For single-source conversion:
+
+`output != input`
+
+For PFTrack Source Set conversion:
+
+`output != autotrack_input`
+
+and
+
+`output != usertrack_input`
+
+If an input/output path collision is detected, conversion must stop before writing any file.
+
+v1 does not overwrite a source native file in-place.
 
 ### PFTrack Source Set CLI
 
@@ -816,3 +967,66 @@ production_start_frame
 are required.
 
 production_end_frame is optional.
+
+### Shot Metadata Validity
+
+`image_width` and `image_height` must be greater than zero.
+
+The following values are invalid:
+
+- `image_width <= 0`
+- `image_height <= 0`
+
+These are invalid metadata values, not missing metadata.
+
+`production_start_frame` must be explicitly provided, but v1 does not require it to be greater than zero.
+
+Valid frame numbering may include zero or negative values depending on the production workflow.
+
+`production_end_frame` remains optional.
+
+Invalid resolved shot metadata must fail with:
+
+`INVALID_SHOT_METADATA`
+
+### Shot Metadata Type Validity
+
+The following ShotConfig metadata values must be integers:
+
+- `image_width`
+- `image_height`
+- `production_start_frame`
+- `production_end_frame`, when provided
+
+Boolean values are not valid integer metadata, even though Python treats `bool` as a subclass of `int`.
+
+Examples of invalid metadata include:
+
+- `image_width = "1920"`
+- `image_height = 1080.5`
+- `production_start_frame = "1001"`
+- `production_end_frame = True`
+
+Invalid resolved metadata must fail with:
+
+`INVALID_SHOT_METADATA`
+
+## Error Contract
+
+v1 distinguishes between formal interchange error codes and internal validation/parser error messages.
+
+Formal error codes are stable identifiers intended for orchestration, CLI, UI, and future pipeline integration.
+
+The following formal error codes are part of the v1 contract:
+
+- `MISSING_REQUIRED_SHOT_METADATA`
+- `INVALID_SHOT_METADATA`
+- `OBSERVATION_OUTSIDE_SHOT_RANGE`
+- `CROSS_SOURCE_TRACK_NAME_COLLISION`
+- `SAME_SOURCE_CONVERSION_NOT_ALLOWED`
+- `UNSUPPORTED_SOURCE_SOFTWARE`
+- `UNSUPPORTED_TARGET_SOFTWARE`
+
+Internal Reader, Writer, and Canonical validation errors may continue to use descriptive `ValueError` messages in v1 unless a stable external error code is explicitly required.
+
+The exact wording of descriptive internal validation messages is not part of the v1 public error contract.

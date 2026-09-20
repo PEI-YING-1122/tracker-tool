@@ -36,11 +36,71 @@ def convert_tracks(
         )
 
     if (
+        not isinstance(
+            shot_config.image_width,
+            int,
+        )
+        or isinstance(
+            shot_config.image_width,
+            bool,
+       )
+        or not isinstance(
+            shot_config.image_height,
+            int,
+        )
+        or isinstance(
+            shot_config.image_height,
+            bool,
+        )
+        or not isinstance(
+            shot_config.production_start_frame,
+            int,
+        )
+        or isinstance(
+            shot_config.production_start_frame,
+            bool,
+        )
+         or (
+            shot_config.production_end_frame is not None
+            and (
+                not isinstance(
+                    shot_config.production_end_frame,
+                    int,
+                )
+                or isinstance(
+                    shot_config.production_end_frame,
+                    bool,
+                )
+            )
+        )
+    ):
+        raise ValueError(
+            "INVALID_SHOT_METADATA"
+        )
+
+    if (
+        shot_config.image_width <= 0
+        or shot_config.image_height <= 0
+    ):
+        raise ValueError(
+            "INVALID_SHOT_METADATA"
+        )
+
+    if (
+        shot_config.production_end_frame is not None
+        and shot_config.production_end_frame
+        < shot_config.production_start_frame
+    ):
+        raise ValueError(
+            "INVALID_SHOT_METADATA"
+        )
+
+    if (
         shot_config.source_software
         == shot_config.target_software
     ):
         raise ValueError(
-            "Same-source conversion is not allowed"
+            "SAME_SOURCE_CONVERSION_NOT_ALLOWED"
         )
 
     if shot_config.source_software == "3DE_R5":
@@ -63,11 +123,29 @@ def convert_tracks(
 
     else:
         raise ValueError(
-            f"Unsupported source software: "
-            f"{shot_config.source_software}"
+            "UNSUPPORTED_SOURCE_SOFTWARE"
         )
 
     validate_canonical_tracks(tracks)
+
+    for track in tracks:
+        for observation in track.observations:
+            if (
+                observation.production_frame
+                < shot_config.production_start_frame
+            ):
+                raise ValueError(
+                    "OBSERVATION_OUTSIDE_SHOT_RANGE"
+                )
+
+            if (
+                shot_config.production_end_frame is not None
+                and observation.production_frame
+                > shot_config.production_end_frame
+            ):
+                raise ValueError(
+                    "OBSERVATION_OUTSIDE_SHOT_RANGE"
+                )
 
     if shot_config.target_software == "3DE_R5":
         return write_3de_tracks(
@@ -85,8 +163,7 @@ def convert_tracks(
         )
 
     raise ValueError(
-        f"Unsupported target software: "
-        f"{shot_config.target_software}"
+        "UNSUPPORTED_TARGET_SOFTWARE"
     )
 
 def convert_pftrack_source_set(
@@ -108,10 +185,69 @@ def convert_pftrack_source_set(
             "MISSING_REQUIRED_SHOT_METADATA"
         )
 
+    if (
+        not isinstance(
+            shot_config.image_width,
+            int,
+        )
+        or isinstance(
+            shot_config.image_width,
+            bool,
+        )
+        or not isinstance(
+            shot_config.image_height,
+            int,
+        )
+        or isinstance(
+            shot_config.image_height,
+            bool,
+        )
+        or not isinstance(
+            shot_config.production_start_frame,
+            int,
+        )
+        or isinstance(
+            shot_config.production_start_frame,
+            bool,
+        )
+        or (
+            shot_config.production_end_frame is not None
+            and (
+                not isinstance(
+                    shot_config.production_end_frame,
+                    int,
+                )
+                or isinstance(
+                    shot_config.production_end_frame,
+                    bool,
+                )
+            )
+        )
+    ):
+        raise ValueError(
+            "INVALID_SHOT_METADATA"
+        )
+
+    if (
+        shot_config.image_width <= 0
+        or shot_config.image_height <= 0
+    ):
+        raise ValueError(
+            "INVALID_SHOT_METADATA"
+        )
+
+    if (
+        shot_config.production_end_frame is not None
+        and shot_config.production_end_frame
+        < shot_config.production_start_frame
+    ):
+        raise ValueError(
+            "INVALID_SHOT_METADATA"
+        )
+
     if shot_config.source_software != "PFTRACK_2017":
         raise ValueError(
-            f"Unsupported source software: "
-            f"{shot_config.source_software}"
+            "UNSUPPORTED_SOURCE_SOFTWARE"
         )
 
     if (
@@ -119,7 +255,7 @@ def convert_pftrack_source_set(
         == shot_config.target_software
     ):
         raise ValueError(
-            "Same-source conversion is not allowed"
+            "SAME_SOURCE_CONVERSION_NOT_ALLOWED"
         )
 
     tracks = read_pftrack_source_set(
@@ -128,6 +264,25 @@ def convert_pftrack_source_set(
     )
 
     validate_canonical_tracks(tracks)
+
+    for track in tracks:
+        for observation in track.observations:
+            if (
+                observation.production_frame
+                < shot_config.production_start_frame
+            ):
+                raise ValueError(
+                    "OBSERVATION_OUTSIDE_SHOT_RANGE"
+                )
+
+            if (
+                shot_config.production_end_frame is not None
+                and observation.production_frame
+                > shot_config.production_end_frame
+            ):
+                raise ValueError(
+                    "OBSERVATION_OUTSIDE_SHOT_RANGE"
+                )
 
     if shot_config.target_software == "3DE_R5":
         return write_3de_tracks(
@@ -142,6 +297,5 @@ def convert_pftrack_source_set(
         )
 
     raise ValueError(
-        f"Unsupported target software: "
-        f"{shot_config.target_software}"
+        "UNSUPPORTED_TARGET_SOFTWARE"
     )

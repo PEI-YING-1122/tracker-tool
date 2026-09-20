@@ -382,3 +382,80 @@ def test_syntheyes_writer_uses_nine_decimal_digits_for_uv():
 
     assert len(u_text.split(".")[1]) >= 9
     assert len(v_text.split(".")[1]) >= 9
+
+def test_syntheyes_writer_rejects_track_name_with_whitespace():
+    tracks = [
+        Track(
+            track_id="test::1",
+            track_name="Point 001",
+            observations=[
+                Observation(
+                    production_frame=1001,
+                    x_pixel=100.0,
+                    y_pixel=200.0,
+                )
+            ],
+        )
+    ]
+
+    shot_config = ShotConfig(
+        image_width=1920,
+        image_height=1080,
+        production_start_frame=1001,
+        production_end_frame=None,
+        source_software="3DE_R5",
+        target_software="SYNTHEYES_2304",
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="SynthEyes track name cannot contain whitespace",
+    ):
+        write_syntheyes_tracks(
+            tracks,
+            shot_config,
+        )
+
+def test_syntheyes_writer_rejects_duplicate_target_track_names():
+    tracks = [
+        Track(
+            track_id="test::1",
+            track_name="Point0001",
+            observations=[
+                Observation(
+                    production_frame=1001,
+                    x_pixel=100.0,
+                    y_pixel=200.0,
+                )
+            ],
+        ),
+        Track(
+            track_id="test::2",
+            track_name="Point0001",
+            observations=[
+                Observation(
+                    production_frame=1002,
+                    x_pixel=300.0,
+                    y_pixel=400.0,
+                )
+            ],
+        ),
+    ]
+
+    shot_config = ShotConfig(
+        image_width=1920,
+        image_height=1080,
+        production_start_frame=1001,
+        production_end_frame=None,
+        source_software="3DE_R5",
+        target_software="SYNTHEYES_2304",
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="SynthEyes target track names must be unique",
+    ):
+        write_syntheyes_tracks(
+            tracks,
+            shot_config,
+        )

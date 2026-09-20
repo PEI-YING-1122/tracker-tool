@@ -8,7 +8,24 @@ def write_syntheyes_tracks(
 ) -> str:
     lines: list[str] = []
 
+    seen_track_names: set[str] = set()
+
     for track in tracks:
+        if any(
+            char.isspace()
+            for char in track.track_name
+        ):
+            raise ValueError(
+                "SynthEyes track name cannot contain whitespace"
+            )
+
+        if track.track_name in seen_track_names:
+            raise ValueError(
+                "SynthEyes target track names must be unique"
+            )
+
+        seen_track_names.add(track.track_name)
+
         for observation in track.observations:
             syntheyes_frame = (
                 observation.production_frame

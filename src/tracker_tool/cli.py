@@ -116,6 +116,11 @@ def main(argv=None) -> int:
         input_path = Path(args.input)
         output_path = Path(args.output)
 
+        if input_path.resolve() == output_path.resolve():
+            raise ValueError(
+                "Input and output paths must be different"
+            )
+
         native_text = input_path.read_text(
             encoding="utf-8",
         )
@@ -152,6 +157,16 @@ def main(argv=None) -> int:
         output_path = Path(
             args.output
         )
+
+        if (
+            output_path.resolve()
+            == autotrack_path.resolve()
+            or output_path.resolve()
+            == usertrack_path.resolve()
+        ):
+            raise ValueError(
+                "Input and output paths must be different"
+            )
 
         autotrack_text = autotrack_path.read_text(
             encoding="utf-8",
