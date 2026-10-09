@@ -41,3 +41,31 @@ jobs:
 
       - name: Run tests
         run: uv run pytest -v
+
+  package-windows:
+    name: package (windows-latest)
+    needs: pytest
+    runs-on: windows-latest
+    env:
+      QT_QPA_PLATFORM: offscreen
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.12.23"
+
+      - name: Install project
+        run: uv sync --locked --all-extras --group packaging
+
+      - name: Build GUI bundle
+        run: uv run --group packaging python packaging/build_gui.py
+
+      - name: Smoke-test GUI bundle
+        run: uv run python packaging/smoke_test_frozen.py dist/TrackerTool/TrackerTool.exe
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TrackerTool-windows-${{ github.sha }}
+          path: dist/TrackerTool
+          retention-days: 14
