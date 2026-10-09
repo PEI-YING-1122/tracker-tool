@@ -9,12 +9,13 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from tracker_tool_gui.widgets import PathField, ResultPanel, ShotFields
+from tracker_tool_gui.worker import TaskRunner
+
 
 WINDOW_TITLE = "Tracker Tool"
 
-# Section order follows docs/gui/GUI_DEVELOPMENT_PLAN.md §6. The controls
-# inside each section are added when the GUI is wired to the Core
-# integration boundary (tracker_tool.app / tracker_tool.contract, phase P1).
+# Section order follows docs/gui/GUI_DEVELOPMENT_PLAN.md §6.
 SECTION_TITLES = (
     "Source",
     "Target",
@@ -28,6 +29,14 @@ CORE_INTEGRATION_PENDING = (
     "Tracker Tool Core."
 )
 
+# Source and Target choices come from tracker_tool.contract, which is
+# added with the Core integration boundary (phase P1).
+SOFTWARE_SELECTION_PENDING = (
+    "Software selection becomes available with the Core integration."
+)
+
+BUSY_STATUS = "Converting…"
+
 
 def installed_core_version() -> str:
     try:
@@ -37,10 +46,13 @@ def installed_core_version() -> str:
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, runner=None):
         super().__init__(parent)
 
         self.setWindowTitle(WINDOW_TITLE)
+
+        self.runner = runner or TaskRunner(self)
+        self.runner.busy_changed.connect(self._on_busy_changed)
 
         central = QWidget(self)
         layout = QVBoxLayout(central)
@@ -53,17 +65,54 @@ class MainWindow(QMainWindow):
             layout.addWidget(section)
             self.sections[title] = section
 
+        for title in ("Source", "Target"):
+            self.sections[title].layout().addWidget(
+                QLabel(SOFTWARE_SELECTION_PENDING, self.sections[title])
+            )
+
+        self.shot_fields = ShotFields(self.sections["Shot"])
+        self.sections["Shot"].layout().addWidget(self.shot_fields)
+
+        self.output_path = PathField(
+            "Choose output file",
+            mode="save",
+            parent=self.sections["Output"],
+        )
+        self.sections["Output"].layout().addWidget(self.output_path)
+
+        self.result_panel = ResultPanel(self.sections["Result"])
+        self.sections["Result"].layout().addWidget(self.result_panel)
+        self.result_panel.show_idle(CORE_INTEGRATION_PENDING)
+
         self.convert_button = QPushButton("Convert", central)
-        self.convert_button.setEnabled(False)
         self.convert_button.setToolTip(CORE_INTEGRATION_PENDING)
         layout.addWidget(self.convert_button)
 
-        self.sections["Result"].layout().addWidget(
-            QLabel(CORE_INTEGRATION_PENDING, self.sections["Result"])
-        )
-
         self.setCentralWidget(central)
 
-        self.statusBar().showMessage(
-            f"tracker-tool {installed_core_version()}"
-        )
+        self._idle_status = f"tracker-tool {installed_core_version()}"
+        self._update_convert_enabled()
+        self.statusBar().showMessage(self._idle_status)
+
+    def _input_sections(self):
+        return [
+            section
+            for title, section in self.sections.items()
+            if title != "Result"
+        ]
+
+    def _update_convert_enabled(self) -> None:
+        # Enabled only once the GUI is connected to Core (phase P1).
+        self.convert_button.setEnabled(False)
+
+    def _on_busy_changed(self, busy: bool) -> None:
+        for section in self._input_sections():
+            section.setEnabled(not busy)
+
+        if busy:
+            self.convert_button.setEnabled(False)
+            self.result_panel.show_busy()
+            self.statusBar().showMessage(BUSY_STATUS)
+        else:
+            self._update_convert_enabled()
+            self.statusBar().showMessage(self._idle_status)
