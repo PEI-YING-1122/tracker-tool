@@ -220,14 +220,26 @@ Verified Tracker 2-D Paths grammar 沒有 header 或 comment row。
 
 以 `#` 開頭的 row 仍是 `<TRACKER_NAME> <FRAME> <U> <V> <OUTCOME>`，其 tracker name 為 `#`。
 
-Reader 不得把 `#` 開頭的 row 當成 comment 略過。
+Reader 不得把 `#` 開頭的 row 當成 comment 略過，也不得刪除任何 row。
 
-Evidence（v1.0.1 CI-13）：
+### Tracker Named `#`（v1.0.1 CI-13）
+
+Evidence：
 
 - 部分真實 SynthEyes 2304 re-export 第一行為 `# 0 0.000000 0.000000 15`。
-- 所有出現此 row 的 scene，先前都匯入過歷史 pre-Core 產生器的輸出檔，而那些檔案的第一行都是 `# ...` comment。
-- 從未匯入產生檔的原始 artist export 沒有此 row。
-- 因此 `#` 是存在於該 scene 中的真實 tracker（由匯入的 comment 行建立），不是 SynthEyes 匯出格式的 header。
+- 所有出現此 row 的 scene（5 / 5），先前都匯入過第一行為 `# ...` comment 的檔案。
+- 從未匯入此類檔案的原始 artist export 沒有此 row。
+- A6-a：將不含 `#` 行的檔案匯入 SynthEyes 2304 後重新匯出，沒有產生 `#` row。
+- 因此 SynthEyes exporter 不會自行輸出 `#` header；`#` tracker 只存在於匯入過 comment 檔案的 scene，其資料（frame 0、畫面中心）不是 artist tracking data。
+
+Reader：
+
+- tracker name 恰好為 `#` 時，必須停止 conversion 並回報描述性錯誤。
+- 不得略過該 row 後繼續轉換（不得 silent deletion）。
+- 不得將其轉為 target 中的額外 Track（不得 silent fabrication）。
+- 其他包含 `#` 的名稱（例如 `#1`、`Tracker#1`）仍是一般 tracker name；在取得證據前不得推定為 comment。
+
+Artist 處理方式：在 SynthEyes 中刪除名為 `#` 的 tracker 後重新匯出。
 
 Tracker Tool Writer 只輸出 tracker row，不輸出 comment。
 

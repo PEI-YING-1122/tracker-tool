@@ -2,6 +2,11 @@ import math
 from tracker_tool.canonical import Observation, Track
 from tracker_tool.config import ShotConfig
 
+# A tracker named "#" appears only in SynthEyes scenes that imported a file
+# whose first line started with "#" (v1.0.1 CI-13). It is not artist
+# tracking data, so conversion stops instead of carrying it into the target.
+UNCONVERTED_TRACKER_NAME = "#"
+
 
 def read_syntheyes_tracks(
     native_text: str,
@@ -19,6 +24,14 @@ def read_syntheyes_tracks(
             )
 
         tracker_name, frame_text, u_text, v_text, _outcome_text = fields
+
+        if tracker_name == UNCONVERTED_TRACKER_NAME:
+            raise ValueError(
+                "SynthEyes tracker named '#' is not converted: it appears "
+                "in scenes that imported a file with a '#' comment line. "
+                "Delete it in SynthEyes and export again."
+            )
+
         try:
             outcome = int(_outcome_text)
         except ValueError as exc:
