@@ -1,3 +1,6 @@
+import pytest
+
+from tracker_tool import main
 from tracker_tool.adapters.syntheyes import (
     read_syntheyes_tracks,
     write_syntheyes_tracks,
@@ -7,15 +10,16 @@ from tracker_tool.conversion import convert_tracks
 
 
 # ADAPTER_SYNTHEYES_2304 §2 / §8: every row is
-# <TRACKER_NAME> <FRAME> <U> <V> <OUTCOME>, and the exact tracker name is the
-# grouping key. "#" is a valid tracker name; the verified grammar has no
-# comment or header rows.
+# <TRACKER_NAME> <FRAME> <U> <V> <OUTCOME>; the grammar has no header or
+# comment rows.
 #
-# Evidence (v1.0.1 CI-13): the "# 0 0.000000 0.000000 15" row in real
-# SynthEyes re-exports is a tracker named "#" that exists in those scenes.
-# Every affected scene had imported a historical pre-Core file whose first
-# line was a "# ..." comment; an original artist export has no such row.
-# The reader must keep treating it as a tracker, not skip it as a comment.
+# Evidence (v1.0.1 CI-13): a tracker named "#" appears only in SynthEyes
+# scenes that imported a file whose first line started with "#". Its single
+# key (frame 0, image centre) is not artist tracking data. A re-export of a
+# scene built from a file without "#" lines has no such row (A6-a).
+#
+# The reader therefore stops with an explicit error instead of carrying a
+# junk point into the target. It never skips or deletes rows silently.
 
 HASH_ROW = "# 0 0.000000 0.000000 15\n"
 TRACKER_ROWS = (
@@ -35,39 +39,93 @@ def _shot_config(target="3DE_R5"):
     )
 
 
-def test_syntheyes_reader_reads_hash_row_as_tracker_named_hash():
-    tracks = read_syntheyes_tracks(
+@pytest.mark.parametrize(
+    "native_text",
+    [
         HASH_ROW + TRACKER_ROWS,
+        TRACKER_ROWS + HASH_ROW,
+        HASH_ROW,
+    ],
+)
+def test_syntheyes_reader_stops_on_tracker_named_hash(native_text):
+    with pytest.raises(ValueError, match="'#'"):
+        read_syntheyes_tracks(native_text, _shot_config())
+
+
+@pytest.mark.parametrize(
+    "target",
+    [
+        "3DE_R5",
+        "PFTRACK_2017",
+    ],
+)
+def test_conversion_stops_instead_of_writing_hash_tracker(target):
+    with pytest.raises(ValueError):
+        convert_tracks(
+            HASH_ROW + TRACKER_ROWS,
+            _shot_config(target),
+        )
+
+
+def test_cli_writes_no_output_for_hash_tracker(tmp_path):
+    input_path = tmp_path / "syntheyes_export.txt"
+    output_path = tmp_path / "output_3de.txt"
+
+    input_path.write_text(
+        HASH_ROW + TRACKER_ROWS,
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError):
+        main(
+            [
+                "convert",
+                "--source",
+                "SYNTHEYES_2304",
+                "--target",
+                "3DE_R5",
+                "--input",
+                str(input_path),
+                "--output",
+                str(output_path),
+                "--width",
+                "4608",
+                "--height",
+                "1757",
+                "--start-frame",
+                "1001",
+            ]
+        )
+
+    assert not output_path.exists()
+
+
+@pytest.mark.parametrize(
+    "tracker_name",
+    [
+        "#1",
+        "Tracker#1",
+        "##",
+    ],
+)
+def test_other_names_containing_hash_are_still_tracker_names(tracker_name):
+    # Only the evidenced name "#" is stopped. Other names are not guessed
+    # to be comments.
+    tracks = read_syntheyes_tracks(
+        f"{tracker_name} 0 0.100000000 0.200000000 15\n",
         _shot_config(),
     )
 
-    assert [
-        (track.track_id, track.track_name, len(track.observations))
-        for track in tracks
-    ] == [
-        ("syntheyes::#", "#", 1),
-        ("syntheyes::Tracker0001", "Tracker0001", 2),
-    ]
-
-    observation = tracks[0].observations[0]
-
-    assert (
-        observation.production_frame,
-        observation.x_pixel,
-        observation.y_pixel,
-    ) == (1001, 2304.0, 878.5)
+    assert [track.track_name for track in tracks] == [tracker_name]
 
 
-def test_hash_tracker_is_preserved_through_conversion():
+def test_syntheyes_export_without_hash_row_still_converts():
     native_text = convert_tracks(
-        HASH_ROW + TRACKER_ROWS,
+        TRACKER_ROWS,
         _shot_config("3DE_R5"),
     )
 
-    lines = native_text.splitlines()
-
-    assert lines[0] == "2"
-    assert lines[1] == "#"
+    assert native_text.splitlines()[:2] == ["1", "Tracker0001"]
 
 
 def test_syntheyes_writer_emits_only_tracker_rows():
