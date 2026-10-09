@@ -9,14 +9,32 @@ authors = [
 requires-python = ">=3.11"
 dependencies = []
 
+[project.optional-dependencies]
+gui = [
+    "PySide6-Essentials>=6.8,<7",
+]
+
 [project.scripts]
 tracker-tool = "tracker_tool:main"
+
+[project.gui-scripts]
+tracker-tool-gui = "tracker_tool_gui.__main__:main"
 
 [build-system]
 requires = ["uv_build>=0.9.28,<0.10.0"]
 build-backend = "uv_build"
 
+[tool.uv.build-backend]
+module-name = ["tracker_tool", "tracker_tool_gui"]
+
 [dependency-groups]
 dev = [
     "pytest>=9.1.1",
+    # pytest-qt fails at startup without a Qt binding, so the dev
+    # environment always carries the binding too. Runtime stays dependency-free.
+    "pytest-qt>=4.4",
+    "PySide6-Essentials>=6.8,<7",
 ]
+
+[tool.pytest.ini_options]
+qt_api = "pyside6"
