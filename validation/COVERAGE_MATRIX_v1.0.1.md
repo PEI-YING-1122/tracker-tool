@@ -4,7 +4,8 @@
 Candidate : release/1.0.x (branched from v1.0.0 / 79fd42d)
 Status    : NOT RELEASED. Release gate open.
 Blocker   : CI-13 (SynthEyes "#" row) until closure checks A6-a / A6-b (section 5)
-Pending   : Artist Native Import A1–A4 (section 5)
+Done      : Artist Native Import A1–A4 reported PASS (report received 2026-10-10)
+Pending   : A1–A4 record fields: import date, software build, artist (section 5)
 ```
 
 **Automated test PASS is not Native Import PASS.** This document labels every kind of evidence separately. Only **E-A** and **E-F** are Artist Imports in the real target software.
@@ -22,7 +23,7 @@ Production native files used for this review are kept outside this public reposi
 | **E-C** | The released reader parses **real** native exports offline (production files, not in this repository). | Automated / offline parse |
 | **E-D** | Historical real-shot Tests 01–08 (2026-08-29/30), Artist Import and round-trip PASS per `docs/INTERCHANGE_MASTER.md` §17. They were produced by pre-Core scripts with a different output grammar, and Tests 01–07 renamed tracks. | Supporting only. Not evidence for released code |
 | **E-E** | Automated equivalence proofs: PFTrack AUTOTRACK and USERTRACK give byte-identical output (`tests/test_pftrack_source_role_output.py`); 3DE static field `0` and `3` give byte-identical output (`tests/test_3de_static_field.py`, also checked on real exports). | **Automated equivalence**, not an import |
-| **E-F** | Artist Import of v1.0.1 candidate output generated from **real** native exports (actions A1–A4). | **Artist Import**, pending |
+| **E-F** | Artist Import of v1.0.1 candidate output generated from **real** native exports (actions A1–A4). | **Artist Import**: A1–A4 PASS (section 5) |
 
 ### Traceability of E-A
 
@@ -48,12 +49,12 @@ Production native files used for this review are kept outside this public reposi
 | 2 | 3DE → SynthEyes | PASS, Golden 01 | same as #1 | same as #1 | **Previously Verified** | same as #1 |
 | 3 | SynthEyes → 3DE | PASS, Golden 03 | None on the success path. CI-3 rejects only names a SynthEyes source cannot produce | 7 of 7 parse. 5 contain a real tracker named `#` (see CI-13; not a defect) | **Previously Verified** | E-A + E-B |
 | 4 | SynthEyes → PFTrack | PASS, Golden 03 | none | same as #3 | **Previously Verified** | E-A + E-B |
-| 5 | PFTrack AutoTrack → 3DE | PASS, Golden 02 (synthetic headerless input) | **CI-1**, CI-2, CI-3 | v1.0.0: 0 of 11 parse. Candidate: 11 of 11 | **Revalidation Required** | E-F: **A3** |
-| 6 | PFTrack AutoTrack → SynthEyes | PASS, Golden 02 | CI-1, CI-2 | same as #5 | **Revalidation Required** | E-F: **A4** |
-| 7 | PFTrack UserTrack → 3DE | **No record** (DOC-1) | CI-1, CI-2, CI-3 | same as #5 | **Not Verified (no Artist Import) — covered by Automated Equivalence** | E-E (automated) + A3 (artist, same output bytes). No separate import |
-| 8 | PFTrack UserTrack → SynthEyes | **No record** (DOC-1) | CI-1, CI-2 | same as #5 | **Not Verified (no Artist Import) — covered by Automated Equivalence** | E-E (automated) + A4 (artist) |
-| 9 | PFTrack Source Set → 3DE | PASS, Golden 05 (synthetic headerless) | CI-1, CI-2, CI-3 | real Test 08 set parses: 14 / 664 | **Revalidation Required** | E-F: **A1** |
-| 10 | PFTrack Source Set → SynthEyes | PASS, Golden 05 | CI-1, CI-2 | same as #9 | **Revalidation Required** | E-F: **A2** |
+| 5 | PFTrack AutoTrack → 3DE | PASS, Golden 02 (synthetic headerless input) | **CI-1**, CI-2, CI-3 | v1.0.0: 0 of 11 parse. Candidate: 11 of 11 | **Revalidated: Artist Import PASS** | E-F: **A3 PASS** (record fields pending) |
+| 6 | PFTrack AutoTrack → SynthEyes | PASS, Golden 02 | CI-1, CI-2 | same as #5 | **Revalidated: Artist Import PASS** | E-F: **A4 PASS** (record fields pending) |
+| 7 | PFTrack UserTrack → 3DE | **No record** (DOC-1) | CI-1, CI-2, CI-3 | same as #5 | **Not Verified (no Artist Import) — covered by Automated Equivalence** | E-E (automated) + A3 PASS (artist, same output bytes). No separate import |
+| 8 | PFTrack UserTrack → SynthEyes | **No record** (DOC-1) | CI-1, CI-2 | same as #5 | **Not Verified (no Artist Import) — covered by Automated Equivalence** | E-E (automated) + A4 PASS (artist) |
+| 9 | PFTrack Source Set → 3DE | PASS, Golden 05 (synthetic headerless) | CI-1, CI-2, CI-3 | real Test 08 set parses: 14 / 664 | **Revalidated: Artist Import PASS** | E-F: **A1 PASS** (record fields pending) |
+| 10 | PFTrack Source Set → SynthEyes | PASS, Golden 05 | CI-1, CI-2 | same as #9 | **Revalidated: Artist Import PASS** | E-F: **A2 PASS** (record fields pending) |
 
 ### Why #1–#4 need no new import
 
@@ -131,10 +132,35 @@ One real 3DE R5 production export (P-1, 43 points) contains 3 points with sample
 | **A6-b** (SynthEyes 2304) | **Required**, about 1 minute | Open the historical Test 08 import scene and check the tracker list. **Expected (H1): a tracker named `#` exists.** |
 | **A1–A4** | **Required** | CI-1 release gate (section 3) |
 
-### Native Import record (to be completed by the artist)
+### Native Import record — A1–A4
 
-| Case | Date | Software + build | Artist | Track count expected / observed | Observation count expected / observed | File Import | Track Identity | Frame Mapping | Point Position | Natural Gap | Editability | Result |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|
+Results as reported by the artist (report received 2026-10-10). **Artist checks** are visual checks in the real software. **Automated checks** are counts computed by the program from the exact files that were imported. The two kinds are kept apart.
+
+| Case | Target | Import date | Software build | Artist | File Import | Track count (artist) | Point Position | Frame Mapping | Natural Gap | Editability | Result |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| A1 | 3DEqualizer R5 | *pending* | *pending* | *pending* | PASS | 14, correct | PASS | visually normal | visually normal | PASS | **PASS** |
+| A2 | SynthEyes 2304 | *pending* | *pending* | *pending* | PASS | 14, correct | PASS | visually normal | visually normal | PASS | **PASS** |
+| A3 | 3DEqualizer R5 | *pending* | *pending* | *pending* | PASS | 9, correct | PASS | visually normal | visually normal | PASS | **PASS** |
+| A4 | SynthEyes 2304 | *pending* | *pending* | *pending* | PASS | 9, correct | PASS | visually normal | visually normal | PASS | **PASS** |
+
+"Visually normal" is recorded as a visual check, not as an exact per-observation verification.
+
+Automated checks on the imported files (candidate CLI output, regenerated byte-identically at `0739fd3`):
+
+| Case | File | Tracks | Observations | Production frames | SHA-256 (first 16) |
+|---|---|---|---|---|---|
+| A1 | `V1_test08_source_set_to_3DE_R5.txt` | 14 | 664 | 1001–1050 | `8d5c3b75a0892945` |
+| A2 | `V1_test08_source_set_to_SYNTHEYES_2304.txt` | 14 | 664 | 1001–1050 | `483ec55c31afc424` |
+| A3 | `V2_test03_zdepth_header_to_3DE_R5.txt` | 9 | 146 | 1001–1020 | `b9dd3d3abc7e3887` |
+| A4 | `V2_test03_zdepth_header_to_SYNTHEYES_2304.txt` | 9 | 146 | 1001–1020 | `6eb1820395f853fb` |
+
+Session notes (target-software setup, not Core defects):
+
+- **3DE IndexError on first import:** the camera plate was shorter than the track data. V1 needs production frames 1001–1050 (50 frames); the test plate covered 1001–1020. It imported correctly after the plate length was fixed. Procedure: the target plate must cover the full production frame range of the converted tracks.
+- **V2 point positions inconsistent at first:** the plate resolution was not set to 4608 × 1757. It displayed correctly after that was fixed. This is the Same Image Geometry contract (`INTERCHANGE_MASTER.md` §7): the target plate must use the resolution given to the conversion.
+- Plate resolutions used: V1 3424 × 2202; V2 4608 × 1757.
+
+---|---|---|---|---|---|---|---|---|---|---|---|---|
 | A1 | | 3DEqualizer R5 build: | | 14 / | 664 / | | | | | | | |
 | A2 | | SynthEyes 2304 build: | | 14 / | 664 / | | | | | | | |
 | A3 | | 3DEqualizer R5 build: | | 9 / | 146 / | | | | | | | |
@@ -149,5 +175,5 @@ v1.0.1 may be tagged only when **all** of the following hold:
 1. CI-13 closed: A6-a and A6-b confirm H1, or H2 is fixed and regression-tested (section 4).
 2. CI-12 is fixed and regression-tested. **Done.**
 3. The full test suite passes locally and in GitHub Actions (Windows and Linux).
-4. A1–A4 are recorded as PASS in the table above.
+4. A1–A4 are recorded as PASS in the table above. **Done**, except the import date, software build, and artist fields.
 5. `validation/README.md` gains the v1.0.1 Native Import records.
