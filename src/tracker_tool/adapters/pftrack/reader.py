@@ -2,6 +2,19 @@ import math
 from tracker_tool.canonical import Observation, Track
 
 
+def _require_line(
+    lines: list[str],
+    line_index: int,
+    description: str,
+) -> str:
+    if line_index >= len(lines):
+        raise ValueError(
+            f"PFTrack native data ended before {description}"
+        )
+
+    return lines[line_index]
+
+
 def read_pftrack_tracks(
     native_text: str,
     source_role: str,
@@ -30,13 +43,17 @@ def read_pftrack_tracks(
 
         track_name = track_name_line[1:-1]
 
-        clip_number = int(lines[line_index])
+        clip_number = int(
+            _require_line(lines, line_index, "clipNumber")
+        )
         line_index += 1
 
         if clip_number != 1:
             raise ValueError("Unexpected PFTrack clip number")
 
-        frame_count = int(lines[line_index])
+        frame_count = int(
+            _require_line(lines, line_index, "frameCount")
+        )
         line_index += 1
 
         observations: list[Observation] = []

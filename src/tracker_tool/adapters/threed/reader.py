@@ -11,6 +11,19 @@ def _require_exact_structural_line(line: str) -> str:
     return line
 
 
+def _require_line(
+    lines: list[str],
+    line_index: int,
+    description: str,
+) -> str:
+    if line_index >= len(lines):
+        raise ValueError(
+            f"3DE native data ended before {description}"
+        )
+
+    return lines[line_index]
+
+
 def read_3de_tracks(
     native_text: str,
     shot_config: ShotConfig,
@@ -18,7 +31,9 @@ def read_3de_tracks(
     lines = native_text.splitlines()
 
     track_count = int(
-    _require_exact_structural_line(lines[0])
+    _require_exact_structural_line(
+        _require_line(lines, 0, "track count")
+    )
 )
     line_index = 1
 
@@ -26,12 +41,12 @@ def read_3de_tracks(
 
     for native_track_index in range(1, track_count + 1):
         track_name = _require_exact_structural_line(
-            lines[line_index]
+            _require_line(lines, line_index, "track name")
         )
         line_index += 1
 
         static_field = _require_exact_structural_line(
-            lines[line_index]
+            _require_line(lines, line_index, "static field")
         )
         line_index += 1
 
@@ -40,7 +55,7 @@ def read_3de_tracks(
 
         sample_count = int(
             _require_exact_structural_line(
-                lines[line_index]
+                _require_line(lines, line_index, "sample count")
             )
         )
         line_index += 1
