@@ -214,6 +214,23 @@ Rules：
 - track_id 只作 Canonical internal identity。
 - Writer 仍輸出 Canonical.track_name，而不是 Canonical.track_id。
 
+### No Header / Comment Rows
+
+Verified Tracker 2-D Paths grammar 沒有 header 或 comment row。
+
+以 `#` 開頭的 row 仍是 `<TRACKER_NAME> <FRAME> <U> <V> <OUTCOME>`，其 tracker name 為 `#`。
+
+Reader 不得把 `#` 開頭的 row 當成 comment 略過。
+
+Evidence（v1.0.1 CI-13）：
+
+- 部分真實 SynthEyes 2304 re-export 第一行為 `# 0 0.000000 0.000000 15`。
+- 所有出現此 row 的 scene，先前都匯入過歷史 pre-Core 產生器的輸出檔，而那些檔案的第一行都是 `# ...` comment。
+- 從未匯入產生檔的原始 artist export 沒有此 row。
+- 因此 `#` 是存在於該 scene 中的真實 tracker（由匯入的 comment 行建立），不是 SynthEyes 匯出格式的 header。
+
+Tracker Tool Writer 只輸出 tracker row，不輸出 comment。
+
 ### Target Name Representability
 
 SynthEyes Tracker 2-D Paths 使用 whitespace-delimited row grammar：
