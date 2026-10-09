@@ -2,6 +2,12 @@ import math
 from tracker_tool.canonical import Observation, Track
 from tracker_tool.config import ShotConfig
 
+# Values verified in real 3DEqualizer R5 exports (ADAPTER_3DE_R5 §4). The
+# field is not Canonical data and does not affect observations. Other
+# values are rejected until verified.
+VERIFIED_3DE_STATIC_FIELD_VALUES = ("0", "3")
+
+
 def _require_exact_structural_line(line: str) -> str:
     if line != line.strip():
         raise ValueError(
@@ -50,7 +56,7 @@ def read_3de_tracks(
         )
         line_index += 1
 
-        if static_field != "0":
+        if static_field not in VERIFIED_3DE_STATIC_FIELD_VALUES:
             raise ValueError("Unexpected 3DE static field")
 
         sample_count = int(
