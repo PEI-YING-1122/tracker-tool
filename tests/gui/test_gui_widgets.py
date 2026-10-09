@@ -117,7 +117,7 @@ def test_shot_fields_emit_changed(qtbot, shot_fields):
 def test_path_field_uses_dialog_result(qtbot, mode):
     calls = []
 
-    def dialog(parent, caption):
+    def dialog(parent, caption, directory):
         calls.append(caption)
         return "C:/shots/native file.txt"
 
@@ -131,7 +131,7 @@ def test_path_field_uses_dialog_result(qtbot, mode):
 
 
 def test_path_field_keeps_path_when_dialog_is_cancelled(qtbot):
-    field = PathField("Choose file", dialog=lambda parent, caption: "")
+    field = PathField("Choose file", dialog=lambda parent, caption, directory: "")
     qtbot.addWidget(field)
     field.path_edit.setText("existing.txt")
 

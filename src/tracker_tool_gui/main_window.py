@@ -9,6 +9,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from tracker_tool_gui.preferences import Preferences
 from tracker_tool_gui.widgets import PathField, ResultPanel, ShotFields
 from tracker_tool_gui.worker import TaskRunner
 
@@ -46,10 +47,12 @@ def installed_core_version() -> str:
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, parent=None, runner=None):
+    def __init__(self, parent=None, runner=None, preferences=None):
         super().__init__(parent)
 
         self.setWindowTitle(WINDOW_TITLE)
+
+        self.preferences = preferences or Preferences()
 
         self.runner = runner or TaskRunner(self)
         self.runner.busy_changed.connect(self._on_busy_changed)
@@ -66,9 +69,12 @@ class MainWindow(QMainWindow):
             self.sections[title] = section
 
         for title in ("Source", "Target"):
-            self.sections[title].layout().addWidget(
-                QLabel(SOFTWARE_SELECTION_PENDING, self.sections[title])
+            placeholder = QLabel(
+                SOFTWARE_SELECTION_PENDING,
+                self.sections[title],
             )
+            placeholder.setWordWrap(True)
+            self.sections[title].layout().addWidget(placeholder)
 
         self.shot_fields = ShotFields(self.sections["Shot"])
         self.sections["Shot"].layout().addWidget(self.shot_fields)
@@ -76,7 +82,11 @@ class MainWindow(QMainWindow):
         self.output_path = PathField(
             "Choose output file",
             mode="save",
+            start_directory=lambda: self.preferences.directory("output"),
             parent=self.sections["Output"],
+        )
+        self.output_path.chosen.connect(
+            lambda path: self.preferences.remember_file("output", path)
         )
         self.sections["Output"].layout().addWidget(self.output_path)
 
@@ -93,6 +103,16 @@ class MainWindow(QMainWindow):
         self._idle_status = f"tracker-tool {installed_core_version()}"
         self._update_convert_enabled()
         self.statusBar().showMessage(self._idle_status)
+
+        geometry = self.preferences.window_geometry()
+
+        if geometry is not None:
+            self.restoreGeometry(geometry)
+
+    def closeEvent(self, event) -> None:
+        self.preferences.save_window_geometry(self.saveGeometry())
+        self.preferences.sync()
+        super().closeEvent(event)
 
     def _input_sections(self):
         return [

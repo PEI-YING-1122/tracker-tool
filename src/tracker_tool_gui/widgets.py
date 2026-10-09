@@ -1,7 +1,7 @@
 from typing import NamedTuple
 
 from PySide6.QtCore import QRegularExpression, Signal
-from PySide6.QtGui import QRegularExpressionValidator
+from PySide6.QtGui import QGuiApplication, QRegularExpressionValidator
 from PySide6.QtWidgets import (
     QCheckBox,
     QFileDialog,
@@ -125,21 +125,21 @@ class ShotFields(QWidget):
         )
 
 
-def _open_file_dialog(parent, caption):
+def _open_file_dialog(parent, caption, directory):
     path, _ = QFileDialog.getOpenFileName(
         parent,
         caption,
-        "",
+        directory,
         NATIVE_FILE_FILTER,
     )
     return path
 
 
-def _save_file_dialog(parent, caption):
+def _save_file_dialog(parent, caption, directory):
     path, _ = QFileDialog.getSaveFileName(
         parent,
         caption,
-        "",
+        directory,
         NATIVE_FILE_FILTER,
     )
     return path
@@ -152,14 +152,23 @@ class PathField(QWidget):
     """
 
     changed = Signal()
+    chosen = Signal(str)
 
-    def __init__(self, caption, mode="open", dialog=None, parent=None):
+    def __init__(
+        self,
+        caption,
+        mode="open",
+        dialog=None,
+        start_directory=None,
+        parent=None,
+    ):
         super().__init__(parent)
 
         if mode not in ("open", "save"):
             raise ValueError(f"Unsupported path field mode: {mode}")
 
         self._caption = caption
+        self._start_directory = start_directory or (lambda: "")
         self._dialog = dialog or (
             _open_file_dialog if mode == "open" else _save_file_dialog
         )
@@ -177,10 +186,15 @@ class PathField(QWidget):
         self.browse_button.clicked.connect(self._browse)
 
     def _browse(self) -> None:
-        path = self._dialog(self, self._caption)
+        path = self._dialog(
+            self,
+            self._caption,
+            self._start_directory(),
+        )
 
         if path:
             self.path_edit.setText(path)
+            self.chosen.emit(path)
 
     def path(self) -> str:
         return self.path_edit.text()
@@ -205,21 +219,33 @@ class ResultPanel(QWidget):
         self.note.setWordWrap(True)
         self.details = QPlainTextEdit(self)
         self.details.setReadOnly(True)
+        self.copy_diagnostics_button = QPushButton("Copy diagnostics", self)
+        self.copy_diagnostics_button.clicked.connect(self._copy_diagnostics)
 
         layout.addWidget(self.heading)
         layout.addWidget(self.message)
         layout.addWidget(self.note)
         layout.addWidget(self.details)
+        layout.addWidget(self.copy_diagnostics_button)
 
+        self._diagnostics = ""
         self.show_idle()
 
-    def _show(self, heading, message="", note="", details=""):
+    def _show(self, heading, message="", note="", details="", diagnostics=""):
         self.heading.setText(heading)
         self.message.setText(message)
         self.note.setText(note)
         self.note.setVisible(bool(note))
         self.details.setPlainText(details)
         self.details.setVisible(bool(details))
+        self._diagnostics = diagnostics
+        self.copy_diagnostics_button.setVisible(bool(diagnostics))
+
+    def diagnostics(self) -> str:
+        return self._diagnostics
+
+    def _copy_diagnostics(self) -> None:
+        QGuiApplication.clipboard().setText(self._diagnostics)
 
     def show_idle(self, message="") -> None:
         self._show("", message)
@@ -227,16 +253,18 @@ class ResultPanel(QWidget):
     def show_busy(self) -> None:
         self._show("Converting…")
 
-    def show_success(self, output_path) -> None:
+    def show_success(self, output_path, diagnostics="") -> None:
         self._show(
             "PASS",
             f"Written to {output_path}",
             ARTIST_IMPORT_NOTE,
+            diagnostics=diagnostics,
         )
 
-    def show_failure(self, heading, message, details="") -> None:
+    def show_failure(self, heading, message, details="", diagnostics="") -> None:
         self._show(
             f"FAIL — {heading}",
             message,
             details=details,
+            diagnostics=diagnostics,
         )
