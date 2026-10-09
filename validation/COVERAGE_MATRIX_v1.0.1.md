@@ -2,8 +2,8 @@
 
 ```text
 Candidate : release/1.0.x (branched from v1.0.0 / 79fd42d)
-Status    : NOT RELEASED. Release gate open.
-Blocker   : CI-13 (SynthEyes "#" row): classified; owner decision on handling C1 / C2 pending (section 4)
+Status    : NOT RELEASED. Release decision pending (see validation/RELEASE_READINESS_v1.0.1.md).
+CI-13     : resolved by C2 (approved 2026-10-10), merged into release/1.0.x
 Done      : Artist Native Import A1–A4 reported PASS (report received 2026-10-10)
 Pending   : A1–A4 record fields: import date, software build, artist (section 5)
 ```
@@ -47,8 +47,8 @@ Production native files used for this review are kept outside this public reposi
 |---|---|---|---|---|---|---|
 | 1 | 3DE → PFTrack | PASS, Golden 01 | CI-2 (failure path only). **CI-12:** the reader now also accepts the verified static field value `3` | v1.0.0: 4 of 6 parse. Candidate: 6 of 6 parse (see SPEC-4 for one file that still cannot convert, by specification) | **Previously Verified** | E-A + E-B. E-E: a `3` input converts byte-identically to the same data with `0`, on synthetic and real data. No new import |
 | 2 | 3DE → SynthEyes | PASS, Golden 01 | same as #1 | same as #1 | **Previously Verified** | same as #1 |
-| 3 | SynthEyes → 3DE | PASS, Golden 03 | None on the success path. CI-3 rejects only names a SynthEyes source cannot produce | 7 of 7 parse. 5 contain a real tracker named `#` (see CI-13; not a defect) | **Previously Verified** | E-A + E-B |
-| 4 | SynthEyes → PFTrack | PASS, Golden 03 | none | same as #3 | **Previously Verified** | E-A + E-B |
+| 3 | SynthEyes → 3DE | PASS, Golden 03 | CI-13 C2: stops only on a tracker named exactly `#` (not present in any verified input). CI-3 rejects only names a SynthEyes source cannot produce | 2 clean exports convert; the 5 re-exports with a `#` tracker stop with the CI-13 guard message | **Previously Verified** | E-A + E-B |
+| 4 | SynthEyes → PFTrack | PASS, Golden 03 | CI-13 C2 (as #3) | same as #3 | **Previously Verified** | E-A + E-B |
 | 5 | PFTrack AutoTrack → 3DE | PASS, Golden 02 (synthetic headerless input) | **CI-1**, CI-2, CI-3 | v1.0.0: 0 of 11 parse. Candidate: 11 of 11 | **Revalidated: Artist Import PASS** | E-F: **A3 PASS** (record fields pending) |
 | 6 | PFTrack AutoTrack → SynthEyes | PASS, Golden 02 | CI-1, CI-2 | same as #5 | **Revalidated: Artist Import PASS** | E-F: **A4 PASS** (record fields pending) |
 | 7 | PFTrack UserTrack → 3DE | **No record** (DOC-1) | CI-1, CI-2, CI-3 | same as #5 | **Not Verified (no Artist Import) — covered by Automated Equivalence** | E-E (automated) + A3 PASS (artist, same output bytes). No separate import |
@@ -100,7 +100,7 @@ Each finding was checked against the released specifications, the released imple
 | Classification | Native value needing explicit support (specification gap) |
 | Safe without changing conversion semantics? | **Yes.** The reader accepts exactly `0` and `3`; any other value stays rejected until real-export evidence exists. The value is not Canonical (CANONICAL §14), the writer still emits `0`, and output for `3` input is byte-identical to output for `0` input. |
 
-### CI-13 — SynthEyes `# 0 0.000000 0.000000 15` → **classified: not a reader defect; handling decision pending**
+### CI-13 — SynthEyes `# 0 0.000000 0.000000 15` → **RESOLVED by C2: source data integrity risk / conservative input guard**
 
 | Question | Answer |
 |---|---|
@@ -108,17 +108,17 @@ Each finding was checked against the released specifications, the released imple
 | Does the released implementation violate the spec? | **No.** It reads the row as a tracker named `#`, as specified. |
 | A6-a (artist, 2026-10-10) | A v1.0.1 output **without** any `#` line was imported into SynthEyes 2304 and re-exported with Tracker 2-D Paths. Result: 14 trackers, 664 rows, all 5 fields, **no `#` row**. The program's own check of the exported file agrees. |
 | Is there enough evidence to classify? | **Yes.** (1) The SynthEyes 2304 exporter does not write a `#` header row by itself: A6-a, plus the original artist export. (2) The `#` row appears only in scenes built by importing a file whose first line started with `#` (5 of 5 historical re-exports), and never otherwise (A6-a, original export). (3) It is written in the same tracker-row grammar as every other tracker, with outcome 15. |
-| Classification | **Not a reader defect.** The row is a tracker that SynthEyes holds in scenes that imported a commented, non-Tracker-Tool file. Its content (one key at frame 0, image centre) does not come from artist tracking. The Tracker Tool writer never emits `#` lines, and A6-a confirms that released-tool round trips do not create it. |
+| Classification (owner, 2026-10-10) | **Source data integrity risk / conservative input guard.** Not a reader defect against the grammar. In every verified case the `#` tracker came from SynthEyes importing a file whose first line started with `#`; this does **not** establish that every tracker named `#` is junk. The Tracker Tool writer never emits `#` lines, and A6-a confirms that released-tool round trips do not create it. |
 | Can it be fixed without changing conversion semantics? | **No.** Today the reader accepts and preserves the row. Any handling (stop, or skip) changes that. |
 | Residual risk if unchanged (C1) | A scene that imported any file with a `#` comment line gives an export that silently carries a junk point `#` (frame `start`, image centre) into 3DE / PFTrack output. |
 | A6-b | Not performed. No historical SynthEyes scene with the `#` tracker exists on disk; the only `.sni` found holds camera and UI data only. After A6-a it is no longer needed for classification. |
 
-**Handling options (owner decision; changes Core behaviour):**
+**Handling options (decided: C2, approved by the owner 2026-10-10, merged as `bac4ded`):**
 
 | Option | Behaviour | Assessment |
 |---|---|---|
 | C1 | No code change. Document as a Known Limitation, with procedure: delete the `#` tracker in SynthEyes before export. | Keeps the specified grammar. Leaves the silent junk-point risk. |
-| **C2 (recommended)** | The SynthEyes reader **stops** with a descriptive `ValueError` when a tracker is named exactly `#`. Nothing is skipped or deleted. | Turns a silent junk point into an explicit stop (Failure Principle: preserve evidence, report, stop). Scope limited to the one evidenced name. Cost: such scenes must be cleaned in SynthEyes first. Prepared on branch `fix/ci13-hash-tracker-guard`, **not merged**. |
+| **C2 (approved, merged)** | The SynthEyes reader **stops** with a descriptive `ValueError` when a tracker name is exactly `#`, and suggests deleting the tracker in SynthEyes if it is not tracking data, or renaming it. Nothing is skipped or deleted. `#1`, `Tracker#1`, `##` are unaffected. No new formal error code. | Turns a possible silent extra point into an explicit stop (Failure Principle). Verified: the 5 historical `#` re-exports stop; clean exports (original 101-tracker export, A6-a export) convert unchanged; all 10 goldens byte-identical; Error Contract identical to v1.0.0. |
 
 Skipping `#` rows is **not** an option: it would invent a comment syntax the verified grammar does not have, and silently delete data.
 
@@ -191,7 +191,7 @@ Session notes (target-software setup, not Core defects):
 
 v1.0.1 may be tagged only when **all** of the following hold:
 
-1. CI-13 handling decided by the owner: C1 (Known Limitation) or C2 (explicit stop, regression-tested) (section 4).
+1. CI-13 resolved: C2 approved, merged, and regression-tested. **Done.**
 2. CI-12 is fixed and regression-tested. **Done.**
 3. The full test suite passes locally and in GitHub Actions (Windows and Linux).
 4. A1–A4 are recorded as PASS in the table above. **Done**, except the import date, software build, and artist fields.
