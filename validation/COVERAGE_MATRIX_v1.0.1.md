@@ -3,7 +3,7 @@
 ```text
 Candidate : release/1.0.x (branched from v1.0.0 / 79fd42d)
 Status    : NOT RELEASED. Release gate open.
-Blocker   : CI-13 (SynthEyes "#" row) until closure checks A6-a / A6-b (section 5)
+Blocker   : CI-13 (SynthEyes "#" row): classified; owner decision on handling C1 / C2 pending (section 4)
 Done      : Artist Native Import A1–A4 reported PASS (report received 2026-10-10)
 Pending   : A1–A4 record fields: import date, software build, artist (section 5)
 ```
@@ -100,20 +100,39 @@ Each finding was checked against the released specifications, the released imple
 | Classification | Native value needing explicit support (specification gap) |
 | Safe without changing conversion semantics? | **Yes.** The reader accepts exactly `0` and `3`; any other value stays rejected until real-export evidence exists. The value is not Canonical (CANONICAL §14), the writer still emits `0`, and output for `3` input is byte-identical to output for `0` input. |
 
-### CI-13 — SynthEyes `# 0 0.000000 0.000000 15` → **RELEASE BLOCKER, closure check pending**
+### CI-13 — SynthEyes `# 0 0.000000 0.000000 15` → **classified: not a reader defect; handling decision pending**
 
 | Question | Answer |
 |---|---|
-| Does the spec define the format? | **Yes.** `ADAPTER_SYNTHEYES_2304.md` §2 and §8: every row is `<TRACKER_NAME> <FRAME> <U> <V> <OUTCOME>`, grouped by exact tracker name. The grammar has no header or comment rows, and `#` is a valid tracker name (no whitespace). |
-| Does the released implementation violate the spec? | **No.** It reads the row as a tracker named `#`, exactly as specified. |
-| Is there enough evidence? | **Strong correlation, mechanism not proven.** Every SynthEyes scene that produced the row (5 of 5) had imported a historical pre-Core generated file whose first line was a `# ...` comment (Tests 01D, 03, 07, 08). The only clean export available has no such row, but it is a single file (the two copies are identical). The row is byte-identical in all five files (`0 0.000000 0.000000 15`), even though the source comment lines differ, so "SynthEyes created a tracker from the comment line" is an inference, not an observation. |
-| Hypotheses | **H1:** `#` is a real tracker in those scenes, so preserving it is correct. **H2:** `#` is emitted by the SynthEyes exporter and is not a tracker, so the output gains a point `#` at image centre, frame `start`, silently. The available evidence favours H1 but does not exclude H2. |
-| Classification | Undecided between "not a Core defect" (H1) and "native row needing explicit handling" (H2). |
-| Current handling | No code change. The released reader follows the specified grammar. `tests/test_syntheyes_hash_tracker_name.py` pins that behaviour and prevents a generic comment skip. These tests **cannot** decide H1 vs H2. |
-| Closure | Checks A6-a / A6-b in section 5. If H1 is confirmed, close as not a defect with no code change. If H2 is confirmed, fix by recognizing the verified exporter row, using the A6-a export as evidence; never by skipping `#` lines generically. |
-| Impact on past evidence | The historical Test 04 / 07 / 08 SynthEyes round-trip PASS results were produced by scripts that skipped `#` lines, so they hid this tracker. The released reader reports it. |
+| Does the spec define the format? | **Yes.** `ADAPTER_SYNTHEYES_2304.md` §2 and §8: every row is `<TRACKER_NAME> <FRAME> <U> <V> <OUTCOME>`, grouped by exact tracker name. The grammar has no header or comment rows. |
+| Does the released implementation violate the spec? | **No.** It reads the row as a tracker named `#`, as specified. |
+| A6-a (artist, 2026-10-10) | A v1.0.1 output **without** any `#` line was imported into SynthEyes 2304 and re-exported with Tracker 2-D Paths. Result: 14 trackers, 664 rows, all 5 fields, **no `#` row**. The program's own check of the exported file agrees. |
+| Is there enough evidence to classify? | **Yes.** (1) The SynthEyes 2304 exporter does not write a `#` header row by itself: A6-a, plus the original artist export. (2) The `#` row appears only in scenes built by importing a file whose first line started with `#` (5 of 5 historical re-exports), and never otherwise (A6-a, original export). (3) It is written in the same tracker-row grammar as every other tracker, with outcome 15. |
+| Classification | **Not a reader defect.** The row is a tracker that SynthEyes holds in scenes that imported a commented, non-Tracker-Tool file. Its content (one key at frame 0, image centre) does not come from artist tracking. The Tracker Tool writer never emits `#` lines, and A6-a confirms that released-tool round trips do not create it. |
+| Can it be fixed without changing conversion semantics? | **No.** Today the reader accepts and preserves the row. Any handling (stop, or skip) changes that. |
+| Residual risk if unchanged (C1) | A scene that imported any file with a `#` comment line gives an export that silently carries a junk point `#` (frame `start`, image centre) into 3DE / PFTrack output. |
+| A6-b | Not performed. No historical SynthEyes scene with the `#` tracker exists on disk; the only `.sni` found holds camera and UI data only. After A6-a it is no longer needed for classification. |
 
-**Release decision (owner, 2026-10-09):** CI-13 stays a v1.0.1 release blocker until the closure checks are done.
+**Handling options (owner decision; changes Core behaviour):**
+
+| Option | Behaviour | Assessment |
+|---|---|---|
+| C1 | No code change. Document as a Known Limitation, with procedure: delete the `#` tracker in SynthEyes before export. | Keeps the specified grammar. Leaves the silent junk-point risk. |
+| **C2 (recommended)** | The SynthEyes reader **stops** with a descriptive `ValueError` when a tracker is named exactly `#`. Nothing is skipped or deleted. | Turns a silent junk point into an explicit stop (Failure Principle: preserve evidence, report, stop). Scope limited to the one evidenced name. Cost: such scenes must be cleaned in SynthEyes first. Prepared on branch `fix/ci13-hash-tracker-guard`, **not merged**. |
+
+Skipping `#` rows is **not** an option: it would invent a comment syntax the verified grammar does not have, and silently delete data.
+
+### A6-a real SynthEyes round-trip (supporting evidence for path #10)
+
+Real PFTrack 2017 source set (Test 08) → candidate → SynthEyes 2304 import → SynthEyes Tracker 2-D Paths export → released reader, compared with the source Canonical (`VALIDATION_CONTRACT.md` §9–§12):
+
+| Check | Result |
+|---|---|
+| Track count / observation count | 14 / 664 = 14 / 664 |
+| Track identity, exact frame set per track | match; 0 added, 0 missing |
+| Max DX / Max DY | 0.000876 px / 0.000557 px |
+| Max / mean / median pixel error | 0.001018 / 0.000555 / 0.000564 px |
+| Precision classification | **ACCEPTABLE_SERIALIZATION** (SynthEyes writes 6 decimals). Historical Test 08 SynthEyes round-trip: ≈ 0.001017606 px |
 
 ### SPEC-4 — 3DE export with zero-sample points (new; not in v1.0.1)
 
@@ -128,8 +147,8 @@ One real 3DE R5 production export (P-1, 43 points) contains 3 points with sample
 | Action | Status | Reason |
 |---|---|---|
 | **A5** (3DE field meaning) | **No longer required** | CI-12 is resolved from existing evidence. Its meaning (likely point colour) is not needed, because the value is not Canonical and is proven not to affect observations. If an export with another value appears, the reader rejects it with a clear message, and that file becomes the evidence. |
-| **A6-a** (SynthEyes 2304) | **Required**, during the A2 or A4 session | After importing the A2 or A4 file (which has no `#` line), export Tracker 2-D Paths from that scene. **Expected (H1): no `#` row.** A `#` row means H2; keep that export as evidence. |
-| **A6-b** (SynthEyes 2304) | **Required**, about 1 minute | Open the historical Test 08 import scene and check the tracker list. **Expected (H1): a tracker named `#` exists.** |
+| **A6-a** (SynthEyes 2304) | **Done, PASS** (2026-10-10) | Re-export of the imported A2 file contains no `#` row; 14 trackers / 664 rows. See section 4. |
+| **A6-b** (SynthEyes 2304) | Not performed; no longer needed | No historical SynthEyes scene with the `#` tracker exists on disk. A6-a is sufficient for classification. |
 | **A1–A4** | **Required** | CI-1 release gate (section 3) |
 
 ### Native Import record — A1–A4
@@ -172,7 +191,7 @@ Session notes (target-software setup, not Core defects):
 
 v1.0.1 may be tagged only when **all** of the following hold:
 
-1. CI-13 closed: A6-a and A6-b confirm H1, or H2 is fixed and regression-tested (section 4).
+1. CI-13 handling decided by the owner: C1 (Known Limitation) or C2 (explicit stop, regression-tested) (section 4).
 2. CI-12 is fixed and regression-tested. **Done.**
 3. The full test suite passes locally and in GitHub Actions (Windows and Linux).
 4. A1–A4 are recorded as PASS in the table above. **Done**, except the import date, software build, and artist fields.
