@@ -13,13 +13,14 @@ from tracker_tool.conversion import convert_tracks
 # <TRACKER_NAME> <FRAME> <U> <V> <OUTCOME>; the grammar has no header or
 # comment rows.
 #
-# Evidence (v1.0.1 CI-13): a tracker named "#" appears only in SynthEyes
-# scenes that imported a file whose first line started with "#". Its single
-# key (frame 0, image centre) is not artist tracking data. A re-export of a
-# scene built from a file without "#" lines has no such row (A6-a).
+# CI-13 (v1.0.1), approved as a conservative input guard against a source
+# data integrity risk. In every verified case, a tracker named "#" came from
+# SynthEyes importing a file whose first line started with "#"; a re-export
+# of a scene built without "#" lines has no such row (A6-a). This does not
+# mean every tracker named "#" is junk.
 #
-# The reader therefore stops with an explicit error instead of carrying a
-# junk point into the target. It never skips or deletes rows silently.
+# The reader stops with an explicit error instead of carrying the tracker
+# into the target. It never skips or deletes rows silently.
 
 HASH_ROW = "# 0 0.000000 0.000000 15\n"
 TRACKER_ROWS = (
