@@ -2,6 +2,24 @@ import math
 from tracker_tool.canonical import Observation, Track
 
 
+# Header variants verified in real PFTrack 2017 exports. They differ only
+# in the column description line; observation rows have 4 values in both.
+VERIFIED_PFTRACK_HEADERS = (
+    (
+        '# "Name"',
+        "# clipNumber",
+        "# frameCount",
+        "# frame, xpos, ypos, similarity, zdepth",
+    ),
+    (
+        '# "Name"',
+        "# clipNumber",
+        "# frameCount",
+        "# frame, xpos, ypos, similarity",
+    ),
+)
+
+
 def _require_line(
     lines: list[str],
     line_index: int,
@@ -13,6 +31,38 @@ def _require_line(
         )
 
     return lines[line_index]
+
+
+def _require_block_line(
+    lines: list[str],
+    line_index: int,
+    description: str,
+) -> str:
+    line = _require_line(lines, line_index, description)
+
+    if line == "":
+        raise ValueError(
+            "Unexpected blank line inside PFTrack track block"
+        )
+
+    return line
+
+
+def _reject_misplaced_header(line: str) -> None:
+    if line.startswith("#"):
+        raise ValueError(
+            "PFTrack header is only allowed at the start of the file"
+        )
+
+
+def _read_native_header(lines: list[str]) -> bool:
+    if not lines or not lines[0].startswith("#"):
+        return False
+
+    if tuple(lines[:4]) not in VERIFIED_PFTRACK_HEADERS:
+        raise ValueError("Unknown PFTrack header")
+
+    return True
 
 
 def read_pftrack_tracks(
@@ -28,12 +78,35 @@ def read_pftrack_tracks(
     else:
         raise ValueError("Unsupported PFTrack source role")
 
-    line_index = 0
+    # Two verified layouts:
+    # - headerless blocks with no blank lines (v1.0.0 input and writer output)
+    # - PFTrack 2017 export: verified header, then exactly one blank
+    #   separator line before every track block
+    has_native_header = _read_native_header(lines)
+
+    line_index = 4 if has_native_header else 0
     tracks: list[Track] = []
 
     while line_index < len(lines):
-        track_name_line = lines[line_index]
+        _reject_misplaced_header(lines[line_index])
+
+        if has_native_header:
+            if lines[line_index] != "":
+                raise ValueError(
+                    "PFTrack track block must be preceded by one blank separator line"
+                )
+
+            line_index += 1
+
+        track_name_line = _require_line(lines, line_index, "track name")
         line_index += 1
+
+        _reject_misplaced_header(track_name_line)
+
+        if track_name_line == "":
+            raise ValueError(
+                "Unexpected blank line in PFTrack native data"
+            )
 
         if not (
             track_name_line.startswith('"')
@@ -44,7 +117,7 @@ def read_pftrack_tracks(
         track_name = track_name_line[1:-1]
 
         clip_number = int(
-            _require_line(lines, line_index, "clipNumber")
+            _require_block_line(lines, line_index, "clipNumber")
         )
         line_index += 1
 
@@ -52,7 +125,7 @@ def read_pftrack_tracks(
             raise ValueError("Unexpected PFTrack clip number")
 
         frame_count = int(
-            _require_line(lines, line_index, "frameCount")
+            _require_block_line(lines, line_index, "frameCount")
         )
         line_index += 1
 
@@ -66,7 +139,11 @@ def read_pftrack_tracks(
                 )
         
             frame_text, x_text, y_text, _similarity_text = (
-                lines[line_index].split()
+                _require_block_line(
+                    lines,
+                    line_index,
+                    "observation row",
+                ).split()
             )
             line_index += 1
 
