@@ -3,8 +3,8 @@
 ```text
 Candidate : release/1.0.x (branched from v1.0.0 / 79fd42d)
 Status    : NOT RELEASED. Release gate open.
+Blocker   : CI-13 (SynthEyes "#" row) until closure checks A6-a / A6-b (section 5)
 Pending   : Artist Native Import A1–A4 (section 5)
-            Owner confirmation of the CI-13 reclassification (section 4)
 ```
 
 **Automated test PASS is not Native Import PASS.** This document labels every kind of evidence separately. Only **E-A** and **E-F** are Artist Imports in the real target software.
@@ -99,18 +99,20 @@ Each finding was checked against the released specifications, the released imple
 | Classification | Native value needing explicit support (specification gap) |
 | Safe without changing conversion semantics? | **Yes.** The reader accepts exactly `0` and `3`; any other value stays rejected until real-export evidence exists. The value is not Canonical (CANONICAL §14), the writer still emits `0`, and output for `3` input is byte-identical to output for `0` input. |
 
-### CI-13 — SynthEyes `# 0 0.000000 0.000000 15` → **NOT A CORE DEFECT** (reclassification proposed)
+### CI-13 — SynthEyes `# 0 0.000000 0.000000 15` → **RELEASE BLOCKER, closure check pending**
 
 | Question | Answer |
 |---|---|
 | Does the spec define the format? | **Yes.** `ADAPTER_SYNTHEYES_2304.md` §2 and §8: every row is `<TRACKER_NAME> <FRAME> <U> <V> <OUTCOME>`, grouped by exact tracker name. The grammar has no header or comment rows, and `#` is a valid tracker name (no whitespace). |
 | Does the released implementation violate the spec? | **No.** It reads the row as a tracker named `#`, exactly as specified. |
-| Is there enough evidence? | **Yes.** Every SynthEyes scene that produced the row (5 of 5) had imported a historical pre-Core generated file whose **first line was a `# ...` comment** (Tests 01D, 03, 07, 08). The original artist export, which never imported a generated file, has no such row (0 of 2 copies). The row has the same shape in all five files. So SynthEyes created a real tracker named `#` from the comment line when it imported those files. It is not part of the export format. |
-| Classification | **Not a Core defect.** Contamination of historical test scenes by pre-Core generator output. The v1.0.0 writer emits tracker rows only, so released-tool round trips cannot create it. |
-| Fix | None. Skipping `#` rows would invent a comment syntax the verified grammar does not have, and would silently delete a tracker that exists in the scene. Regression tests now pin the specified behaviour (`tests/test_syntheyes_hash_tracker_name.py`), and the adapter spec documents it. |
+| Is there enough evidence? | **Strong correlation, mechanism not proven.** Every SynthEyes scene that produced the row (5 of 5) had imported a historical pre-Core generated file whose first line was a `# ...` comment (Tests 01D, 03, 07, 08). The only clean export available has no such row, but it is a single file (the two copies are identical). The row is byte-identical in all five files (`0 0.000000 0.000000 15`), even though the source comment lines differ, so "SynthEyes created a tracker from the comment line" is an inference, not an observation. |
+| Hypotheses | **H1:** `#` is a real tracker in those scenes, so preserving it is correct. **H2:** `#` is emitted by the SynthEyes exporter and is not a tracker, so the output gains a point `#` at image centre, frame `start`, silently. The available evidence favours H1 but does not exclude H2. |
+| Classification | Undecided between "not a Core defect" (H1) and "native row needing explicit handling" (H2). |
+| Current handling | No code change. The released reader follows the specified grammar. `tests/test_syntheyes_hash_tracker_name.py` pins that behaviour and prevents a generic comment skip. These tests **cannot** decide H1 vs H2. |
+| Closure | Checks A6-a / A6-b in section 5. If H1 is confirmed, close as not a defect with no code change. If H2 is confirmed, fix by recognizing the verified exporter row, using the A6-a export as evidence; never by skipping `#` lines generically. |
 | Impact on past evidence | The historical Test 04 / 07 / 08 SynthEyes round-trip PASS results were produced by scripts that skipped `#` lines, so they hid this tracker. The released reader reports it. |
 
-**Release decision needed (owner):** remove CI-13 from the v1.0.1 release blockers on the basis of this evidence.
+**Release decision (owner, 2026-10-09):** CI-13 stays a v1.0.1 release blocker until the closure checks are done.
 
 ### SPEC-4 — 3DE export with zero-sample points (new; not in v1.0.1)
 
@@ -125,7 +127,8 @@ One real 3DE R5 production export (P-1, 43 points) contains 3 points with sample
 | Action | Status | Reason |
 |---|---|---|
 | **A5** (3DE field meaning) | **No longer required** | CI-12 is resolved from existing evidence. Its meaning (likely point colour) is not needed, because the value is not Canonical and is proven not to affect observations. If an export with another value appears, the reader rejects it with a clear message, and that file becomes the evidence. |
-| **A6** (SynthEyes `#` row) | **No longer required** for the fix. **Optional, about 1 minute** | Lineage evidence settles it. Optional confirmation: open one affected SynthEyes scene (e.g. the Test 08 import scene) and check that the tracker list contains a tracker named `#`. No export is needed. |
+| **A6-a** (SynthEyes 2304) | **Required**, during the A2 or A4 session | After importing the A2 or A4 file (which has no `#` line), export Tracker 2-D Paths from that scene. **Expected (H1): no `#` row.** A `#` row means H2; keep that export as evidence. |
+| **A6-b** (SynthEyes 2304) | **Required**, about 1 minute | Open the historical Test 08 import scene and check the tracker list. **Expected (H1): a tracker named `#` exists.** |
 | **A1–A4** | **Required** | CI-1 release gate (section 3) |
 
 ### Native Import record (to be completed by the artist)
@@ -143,7 +146,7 @@ One real 3DE R5 production export (P-1, 43 points) contains 3 points with sample
 
 v1.0.1 may be tagged only when **all** of the following hold:
 
-1. ~~CI-13 fixed~~ → the owner confirms the CI-13 reclassification (section 4).
+1. CI-13 closed: A6-a and A6-b confirm H1, or H2 is fixed and regression-tested (section 4).
 2. CI-12 is fixed and regression-tested. **Done.**
 3. The full test suite passes locally and in GitHub Actions (Windows and Linux).
 4. A1–A4 are recorded as PASS in the table above.
