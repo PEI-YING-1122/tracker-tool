@@ -271,6 +271,30 @@ Auto000084
 pf_autotrack::Auto000084
 ```
 
+### Target Name Representability
+
+3DE Track Name 是 structural line，依 §3 不得有 leading / trailing whitespace。
+
+因此 Canonical `track_name` 若有 leading 或 trailing whitespace，例如：
+
+```text
+" Point0001"
+"Point0001 "
+```
+
+無法由目前 verified 3DE grammar 無損表示。
+
+Writer 不得：
+
+- trim
+- rename
+- replace whitespace
+- quote / escape into an unverified private syntax
+
+Writer 必須拒絕輸出（v1.0.1 CI-3）。
+
+Track Name 內部 whitespace（例如 `Point 001`）不屬此規則；其 3DE R5 Artist Import 尚未驗證。
+
 ---
 
 ## 9. Natural Gap
