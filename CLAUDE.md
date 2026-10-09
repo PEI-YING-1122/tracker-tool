@@ -1,5 +1,15 @@
 # Tracker Tool — Claude Code Project Instructions
 
+## 0. Language & Communication Rules
+
+- 與使用者的所有對話、開發進度、測試結果、問題分析、決策請求及最終報告，預設使用**繁體中文（台灣用語）**。
+- 即使原始文件、程式碼、工具輸出、GitHub Issues 或測試紀錄是英文，也不得因此自動切換成英文回覆。
+- 程式碼、API、Class、Function、CLI 指令、Error Code、檔案名稱等技術識別字保留原文。
+- 現有英文技術文件不需要全面翻譯；程式碼註解及 Git Commit Message 可以維持既有風格。
+- 除非使用者明確要求英文，否則所有面向使用者的溝通一律使用繁體中文。
+
+---
+
 ## 1. Project Status
 
 Tracker Tool Core **v1.0.0** has been completed, validated, formally released, and is now the baseline for all further development.
