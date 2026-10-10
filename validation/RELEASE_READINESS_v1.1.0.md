@@ -132,4 +132,17 @@ PR #8（合併 main）維持 Draft。
 
 交付包已完成，授權義務的處理見 `packaging/delivery/LICENSE_SUPPLEMENT.md`。
 
-唯一尚待確認的是 **Microsoft Visual C++ runtime 的再散布條款是否適用**。這屬於法律判斷，需要 owner 確認。確認前，**不標記為「內部正式交付完成」**。
+**保存位置：** `E:_projectAI_Tracking_workTrackerTool_Releases1.1.0`（本機，不在 repository 中）。
+- 186 個檔案，全部符合 `DELIVERY_MANIFEST.txt`；
+- `LGPL_SOURCES/SHA256SUMS.txt` 校驗通過，Qt 原始碼符合官方 md5；
+- `TrackerTool/` 與 v1.1.0 tag build 逐檔相同；
+- 在保存位置執行 smoke test PASS，執行後檔案未變動。
+
+**Microsoft VC++ runtime：** 證據見 `docs/gui/MSVC_RUNTIME_LICENSE_EVIDENCE.md`。
+- 依 Microsoft 文件，隨附這些 DLL 的權利限於擁有有效 Visual Studio 授權的使用者。
+- Python 與 PySide6 都沒有另外授予轉散布的權利。
+- 建置機沒有安裝 Visual Studio。
+
+因此**無法確認**目前的隨附方式符合條款。替代方案（A：確認授權事實；B：改用 Microsoft 官方 Redistributable）與必要測試見該文件。
+
+解決前，**不標記為「內部正式交付完成」**。
