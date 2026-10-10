@@ -30,6 +30,12 @@ def main(argv=None) -> int:
         print(f"FAIL: executable not found: {args.executable}")
         return 1
 
+    build_info = args.executable.parent / "BUILD_INFO.txt"
+
+    if not build_info.is_file():
+        print(f"FAIL: build information not found: {build_info}")
+        return 1
+
     environment = dict(os.environ)
     environment[SMOKE_TEST_ENV] = "1"
 

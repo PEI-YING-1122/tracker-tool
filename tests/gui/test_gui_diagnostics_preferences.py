@@ -184,3 +184,30 @@ def test_main_window_restores_geometry_and_never_persists_shot_values(
     assert second.size() == closed_size
     assert second.shot_fields.width_field.text() == ""
     assert second.shot_fields.start_frame_field.text() == ""
+
+
+def test_diagnostics_report_source_checkout_when_not_frozen(monkeypatch):
+    monkeypatch.delattr(sys, "frozen", raising=False)
+
+    assert "GUI build: source checkout (not a packaged build)" in format_diagnostics()
+
+
+def test_diagnostics_report_build_info_of_frozen_bundle(monkeypatch, tmp_path):
+    (tmp_path / "BUILD_INFO.txt").write_text(
+        "commit: abc123\nuncommitted changes: no\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(sys, "frozen", True, raising=False)
+    monkeypatch.setattr(sys, "executable", str(tmp_path / "TrackerTool.exe"))
+
+    text = format_diagnostics()
+
+    assert "GUI build commit: abc123" in text
+    assert "GUI build uncommitted changes: no" in text
+
+
+def test_diagnostics_report_missing_build_info(monkeypatch, tmp_path):
+    monkeypatch.setattr(sys, "frozen", True, raising=False)
+    monkeypatch.setattr(sys, "executable", str(tmp_path / "TrackerTool.exe"))
+
+    assert "GUI build: packaged, build information missing" in format_diagnostics()
