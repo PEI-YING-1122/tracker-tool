@@ -1,10 +1,10 @@
-# Tracker Tool v1.1.0 — Release Notes (DRAFT)
+# Tracker Tool v1.1.0 — Release Notes
 
 ```text
-Tag            : v1.1.0  (annotated) — NOT CREATED; awaiting owner approval
-Candidate      : release/1.1.x (see validation/RELEASE_READINESS_v1.1.0.md for the exact commit)
+Tag            : v1.1.0  (annotated) → 437e7e60fdd354120e73360bd39f78c8012cda8b
+Tag message    : Tracker Tool v1.1.0 — Windows GUI
 Release title  : Tracker Tool v1.1.0 — Windows GUI
-Status         : DRAFT — release candidate
+Status         : RELEASED 2026-10-10 — https://github.com/PEI-YING-1122/tracker-tool/releases/tag/v1.1.0
 ```
 
 The GitHub Release body is the section below. The Windows GUI executable is delivered internally only and is **not** attached to the GitHub Release.
