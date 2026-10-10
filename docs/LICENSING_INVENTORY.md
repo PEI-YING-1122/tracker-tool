@@ -89,11 +89,11 @@ pytest、pytest-qt、pluggy、iniconfig、packaging、pygments、colorama、typi
 
 | 來源 | 可能的義務 | 目前狀態 |
 |---|---|---|
-| Qt / PySide6（LGPL-3.0） | 附上 LGPL-3.0 與 GPL-3.0 全文；提供對應版本的原始碼取得方式；讓使用者能替換 Qt 函式庫；專案本身的授權條款不得禁止為除錯而修改或逆向工程 | 條文與原始碼來源已隨 bundle 附上。one-folder bundle 的 Qt DLL 是獨立檔案 |
+| Qt / PySide6（LGPL-3.0） | 附上 LGPL-3.0 與 GPL-3.0 全文；提供對應版本的原始碼取得方式；讓使用者能替換 Qt 函式庫；專案本身的授權條款不得禁止為除錯而修改或逆向工程 | 內部交付包的 `LGPL_SOURCES/` 附官方 Qt / PySide6 原始碼與 Tracker Tool 原始碼。Qt DLL 可直接替換；打包進 exe 的 PySide6 Python 部分可用附上的原始碼重建（已實測）。GUI 執行時不顯示版權聲明，§4(c) 不適用 |
 | Python、OpenSSL、bzip2、xz、libmpdec、zlib | 附上授權與版權聲明 | 已隨 bundle 附上（Python LICENSE、CPython incorporated software、Apache-2.0、xz COPYING） |
 | Mesa、LLVM、libtiff、libwebp | 附上各自的授權與版權聲明 | 已隨 bundle 附上 |
-| Qt 內部其他第三方函式庫 | 附上各自的版權聲明 | 只列出元件與授權名稱，各元件的版權聲明**尚未收錄** |
-| Microsoft VC++ runtime | 依可再散布條款散布 | 待確認 |
+| Qt 內部其他第三方函式庫 | 附上各自的版權聲明 | **已收錄**：`Qt-6.11.2-third-party-attributions.txt`（46 個元件，取自 Qt 原始碼的 `qt_attribution.json`） |
+| Microsoft VC++ runtime | 依可再散布條款散布 | Microsoft 允許 app-local 再散布（Visual Studio 授權「Distributable Code」）。是否適用於本專案，**待 owner 確認** |
 | PyInstaller bootloader | 例外條款下通常沒有額外義務 | 待確認 |
 
 **因此目前不宣稱完全合規。**
@@ -106,11 +106,11 @@ pytest、pytest-qt、pluggy、iniconfig、packaging、pygments、colorama、typi
 |---|---|
 | 第三方聲明 | `packaging/THIRD_PARTY_NOTICES.md`（內部交付版），隨 bundle 附上 |
 | 授權全文 | LGPL-3.0、GPL-3.0、Apache-2.0、Python 3.11 LICENSE、CPython incorporated software、PyInstaller COPYING（含 bootloader exception）、xz COPYING、Mesa license、LLVM license、libtiff license、libwebp COPYING，隨 bundle 附在 `THIRD_PARTY_LICENSES/`。`tests/test_third_party_notices.py` 會檢查 notices 提到的條文與實際檔案一致 |
-| Qt 6.11.2 內含的第三方元件 | 已依 Qt 官方「Licenses Used in Qt 6.11」列出元件與授權；各元件完整的版權聲明尚未逐一收錄 |
-| LGPL 原始碼與替換 | 已在聲明中列出 Qt 6.11.2 / PySide6 6.11.2 的原始碼來源，並說明 one-folder bundle 中 Qt / PySide6 為可替換的獨立檔案 |
+| Qt 6.11.2 內含的第三方元件 | 完整版權聲明與授權全文已收錄（見上） |
+| LGPL 原始碼與替換 | 交付包附原始碼（`packaging/assemble_delivery.py`），替換方式見 `packaging/delivery/LICENSE_SUPPLEMENT.md` |
 | 使用範圍與授權說明 | `packaging/delivery/USE_AND_LICENSE.md`，隨 bundle 附上 |
 | 使用說明 | `packaging/delivery/USER_GUIDE.md`，隨 bundle 附上 |
-| 未確認項目 | 列在 `THIRD_PARTY_NOTICES.md` §5。**不宣稱完全合規** |
+| 未確認項目 | 列在 `THIRD_PARTY_NOTICES.md` §5 與 `LICENSE_SUPPLEMENT.md` §3。剩下 MSVC runtime 待 owner 確認，**不宣稱完全合規** |
 
 ## 5. 需要 owner 決定的事項
 

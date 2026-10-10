@@ -93,7 +93,7 @@
   - 3DE track 名稱若有前後空白，無法輸出到 3DE。
   - SynthEyes 中名稱剛好是 `#` 的 tracker。
   - 3DE export 中沒有任何 sample 的點。
-- **PFTrack source set**：若 AutoTrack 或 UserTrack 其中一個檔案沒有任何 track，目前仍會轉換，只輸出另一個檔案的 track。這已列為正式發布前必須在 Core 修正的項目（CI-11）。試用時請確認兩個檔案都有內容。
+- **PFTrack source set**（P6 試用 build 的限制）：若 AutoTrack 或 UserTrack 其中一個檔案沒有任何 track，P6 試用 build 仍會轉換，只輸出另一個檔案的 track。Core v1.0.2 已修正（CI-11）：v1.1.0 起，這種情況會停止轉換，並指出是哪一個檔案。
 - 座標極小（\|x\| < 1e-4）時會以科學記號輸出，目標軟體能否接受尚未驗證。
 
 ---
