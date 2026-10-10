@@ -82,4 +82,12 @@ Before lifting the pin, re-check a newer PySide6 on Linux / Python 3.11 with the
 
 `packaging/smoke_test_frozen.py` fails if any of them is missing.
 
+## Runtime DLLs from the Python build
+
+PyInstaller looks up the DLLs that extension modules need (for example OpenSSL for `_hashlib.pyd`) through `PATH`. On a machine with Git for Windows, it found Git's `mingw64` OpenSSL 3.1.4 before the Python build's own 3.5.5.
+
+`build_gui.py` now puts `sys.base_prefix\DLLs` first on `PATH` for the PyInstaller run. It also stops the build if the bundled `libcrypto-3-x64.dll`, `libssl-3-x64.dll` or `libffi-8.dll` differs from the Python build's copy.
+
+Bundles built before this change, including the P6 trial bundle (`fde0c16`), may contain the other OpenSSL. Rebuild them before delivery.
+
 Only Windows is a delivery platform. No Linux executable, public download, code signing, or auto-update is planned for the first release.

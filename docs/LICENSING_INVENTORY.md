@@ -63,16 +63,18 @@
 
 ### GUI（Windows bundle）實際散布的元件
 
-詳細清單與檔案位置見 `packaging/THIRD_PARTY_NOTICES.md`（DRAFT）。
+詳細清單與檔案位置見 `packaging/THIRD_PARTY_NOTICES.md`。下表依 2026-10-10 對實際 bundle 的檢查（每個 `.dll` / `.pyd` 的版本資源、imports、內嵌識別字串）。
 
 | 元件 | 授權 | 備註 |
 |---|---|---|
 | PySide6 / Shiboken6 6.11.2 | LGPL-3.0 / GPL-2.0 / GPL-3.0（擇一）或商業授權 | 開源使用時通常採 LGPL-3.0 |
-| Qt 6 DLL 與 plugins | LGPL-3.0（開源） | 含 Qt 內部的第三方函式庫，清單見 Qt 官方「Licenses Used in Qt」 |
-| Mesa `opengl32sw.dll` | MIT 類 | 隨 PySide6 一起安裝 |
-| Python 3.11 runtime | PSF-2.0 | 含 bzip2、xz、libmpdec 等 |
-| OpenSSL 3.5.5 | Apache-2.0 | 因 Python 的 `_hashlib` / `_socket` 一併被打包 |
-| Microsoft VC++ runtime | Microsoft 可再散布條款 | |
+| Qt 6.11.2 DLL、plugins、translations | LGPL-3.0（開源） | 確認內含 PCRE2、TinyCBOR、FreeType、HarfBuzz、libjpeg-turbo；Image Formats plugins 內含 libtiff、libwebp。`icuuc.dll` 使用 Windows 系統內建版本，不隨附 |
+| Mesa `opengl32sw.dll` 11.2.2 | MIT 類；內含 LLVM（Apache-2.0 WITH LLVM-exception） | 隨 PySide6 一起安裝 |
+| Python 3.11.14 runtime | PSF-2.0 | 含 zlib 1.3.1、libmpdec 2.5.1、bzip2、liblzma |
+| OpenSSL 3.5.5 | Apache-2.0 | Python build 自帶的版本，因 `_hashlib` 一併被打包。build script 會檢查來源，見下方說明 |
+| Microsoft VC++ runtime 14.44.35211.0 | Microsoft 可再散布條款 | |
+
+**已修正的打包缺陷（2026-10-10）：** PyInstaller 會從 `PATH` 尋找 `_hashlib.pyd` 依賴的 OpenSSL DLL。開發機上它找到的是 Git for Windows 的 OpenSSL 3.1.4（連結 `msvcrt.dll`），而不是 Python 自帶的 3.5.5。P6 試用 bundle（`fde0c16`）可能也是如此。`packaging/build_gui.py` 現在會把 Python 的 `DLLs` 目錄放在 `PATH` 最前面，並在 build 後比對雜湊，不一致時 build 失敗。
 | PyInstaller bootloader | GPL-2.0-or-later，附 bootloader 例外條款 | 例外條款允許以任何授權散布打包後的程式 |
 
 ### 只用於開發、測試、建置（不散布）
@@ -87,9 +89,10 @@ pytest、pytest-qt、pluggy、iniconfig、packaging、pygments、colorama、typi
 
 | 來源 | 可能的義務 | 目前狀態 |
 |---|---|---|
-| Qt / PySide6（LGPL-3.0） | 附上 LGPL-3.0 與 GPL-3.0 全文；提供對應版本的原始碼取得方式；讓使用者能替換 Qt 函式庫；專案本身的授權條款不得禁止為除錯而修改或逆向工程 | 條文已收集（`packaging/licenses/`）。one-folder bundle 的 Qt DLL 是獨立檔案。**尚未放入 bundle** |
-| Python、OpenSSL、bzip2、xz、libmpdec | 附上授權與版權聲明 | Python / Apache-2.0 條文已收集；xz、libmpdec 條文**尚未收集** |
-| Qt 內部第三方函式庫、Mesa | 附上各自的版權聲明 | **尚未收集** |
+| Qt / PySide6（LGPL-3.0） | 附上 LGPL-3.0 與 GPL-3.0 全文；提供對應版本的原始碼取得方式；讓使用者能替換 Qt 函式庫；專案本身的授權條款不得禁止為除錯而修改或逆向工程 | 條文與原始碼來源已隨 bundle 附上。one-folder bundle 的 Qt DLL 是獨立檔案 |
+| Python、OpenSSL、bzip2、xz、libmpdec、zlib | 附上授權與版權聲明 | 已隨 bundle 附上（Python LICENSE、CPython incorporated software、Apache-2.0、xz COPYING） |
+| Mesa、LLVM、libtiff、libwebp | 附上各自的授權與版權聲明 | 已隨 bundle 附上 |
+| Qt 內部其他第三方函式庫 | 附上各自的版權聲明 | 只列出元件與授權名稱，各元件的版權聲明**尚未收錄** |
 | Microsoft VC++ runtime | 依可再散布條款散布 | 待確認 |
 | PyInstaller bootloader | 例外條款下通常沒有額外義務 | 待確認 |
 
@@ -102,7 +105,7 @@ pytest、pytest-qt、pluggy、iniconfig、packaging、pygments、colorama、typi
 | 項目 | 狀態 |
 |---|---|
 | 第三方聲明 | `packaging/THIRD_PARTY_NOTICES.md`（內部交付版），隨 bundle 附上 |
-| 授權全文 | LGPL-3.0、GPL-3.0、Apache-2.0、Python 3.11 LICENSE、CPython incorporated software、PyInstaller COPYING（含 bootloader exception）、xz COPYING、Mesa license，隨 bundle 附在 `THIRD_PARTY_LICENSES/` |
+| 授權全文 | LGPL-3.0、GPL-3.0、Apache-2.0、Python 3.11 LICENSE、CPython incorporated software、PyInstaller COPYING（含 bootloader exception）、xz COPYING、Mesa license、LLVM license、libtiff license、libwebp COPYING，隨 bundle 附在 `THIRD_PARTY_LICENSES/`。`tests/test_third_party_notices.py` 會檢查 notices 提到的條文與實際檔案一致 |
 | Qt 6.11.2 內含的第三方元件 | 已依 Qt 官方「Licenses Used in Qt 6.11」列出元件與授權；各元件完整的版權聲明尚未逐一收錄 |
 | LGPL 原始碼與替換 | 已在聲明中列出 Qt 6.11.2 / PySide6 6.11.2 的原始碼來源，並說明 one-folder bundle 中 Qt / PySide6 為可替換的獨立檔案 |
 | 使用範圍與授權說明 | `packaging/delivery/USE_AND_LICENSE.md`，隨 bundle 附上 |

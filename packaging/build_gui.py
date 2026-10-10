@@ -8,6 +8,8 @@ The bundle is written to dist/TrackerTool/ unless --dist is given.
 """
 
 import argparse
+import hashlib
+import os
 import shutil
 import subprocess
 import sys
@@ -28,6 +30,12 @@ DELIVERY_FILES = (
 )
 LICENSE_TEXTS_DIR = PACKAGING_DIR / "licenses"
 LICENSE_TEXTS_TARGET = "THIRD_PARTY_LICENSES"
+
+# DLLs the Python build ships next to its extension modules. PyInstaller
+# resolves them through PATH, so another copy on PATH (for example Git for
+# Windows' OpenSSL) could otherwise end up in the bundle.
+PYTHON_DLLS_DIR = Path(sys.base_prefix) / "DLLs"
+PYTHON_RUNTIME_DLLS = ("libcrypto-3-x64.dll", "libssl-3-x64.dll", "libffi-8.dll")
 
 
 def build_command(dist_dir: Path, work_dir: Path) -> list[str]:
@@ -63,14 +71,39 @@ def main(argv=None) -> int:
     )
     args = parser.parse_args(argv)
 
-    result = subprocess.call(build_command(args.dist, args.work))
+    result = subprocess.call(build_command(args.dist, args.work), env=build_env())
 
     if result == 0:
         bundle = args.dist / APP_NAME
+        check_python_runtime_dlls(bundle)
         write_build_info(bundle / BUILD_INFO_NAME)
         copy_delivery_documents(bundle)
 
     return result
+
+
+def build_env() -> dict[str, str]:
+    env = dict(os.environ)
+    env["PATH"] = os.pathsep.join([str(PYTHON_DLLS_DIR), env.get("PATH", "")])
+    return env
+
+
+def check_python_runtime_dlls(bundle: Path) -> None:
+    """Fail the build if a bundled runtime DLL is not the Python build's copy."""
+    for name in PYTHON_RUNTIME_DLLS:
+        expected = PYTHON_DLLS_DIR / name
+        bundled = bundle / "_internal" / name
+        if not expected.is_file() or not bundled.is_file():
+            continue
+        if _sha256(bundled) != _sha256(expected):
+            raise SystemExit(
+                f"{bundled} does not match {expected}; "
+                "a different copy was picked up from PATH"
+            )
+
+
+def _sha256(path: Path) -> str:
+    return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
 def copy_delivery_documents(bundle: Path) -> None:
