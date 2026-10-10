@@ -10,6 +10,7 @@ The bundle is written to dist/TrackerTool/ unless --dist is given.
 import argparse
 import hashlib
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -36,6 +37,11 @@ LICENSE_TEXTS_TARGET = "THIRD_PARTY_LICENSES"
 # Windows' OpenSSL) could otherwise end up in the bundle.
 PYTHON_DLLS_DIR = Path(sys.base_prefix) / "DLLs"
 PYTHON_RUNTIME_DLLS = ("libcrypto-3-x64.dll", "libssl-3-x64.dll", "libffi-8.dll")
+
+# Microsoft Visual C++ runtime DLLs that Python, PySide6 and shiboken6 put
+# next to their binaries. They are not shipped: workstations use the
+# Microsoft Visual C++ Redistributable instead.
+MSVC_RUNTIME_DLL = re.compile(r"(vcruntime|msvcp|concrt|vccorlib)\d+(_\w+)?\.dll", re.IGNORECASE)
 
 
 def build_command(dist_dir: Path, work_dir: Path) -> list[str]:
@@ -76,6 +82,8 @@ def main(argv=None) -> int:
     if result == 0:
         bundle = args.dist / APP_NAME
         check_python_runtime_dlls(bundle)
+        for path in remove_msvc_runtime_dlls(bundle):
+            print(f"removed {path.relative_to(bundle)}")
         write_build_info(bundle / BUILD_INFO_NAME)
         copy_delivery_documents(bundle)
 
@@ -100,6 +108,15 @@ def check_python_runtime_dlls(bundle: Path) -> None:
                 f"{bundled} does not match {expected}; "
                 "a different copy was picked up from PATH"
             )
+
+
+def remove_msvc_runtime_dlls(bundle: Path) -> list[Path]:
+    removed = sorted(
+        path for path in bundle.rglob("*.dll") if MSVC_RUNTIME_DLL.fullmatch(path.name)
+    )
+    for path in removed:
+        path.unlink()
+    return removed
 
 
 def _sha256(path: Path) -> str:

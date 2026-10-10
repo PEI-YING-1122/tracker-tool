@@ -12,12 +12,15 @@ Usage:
 
 import argparse
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
 
 
 SMOKE_TEST_ENV = "TRACKER_TOOL_GUI_SMOKE_TEST"
+# Same pattern as build_gui.MSVC_RUNTIME_DLL: these must not be bundled.
+MSVC_RUNTIME_DLL = re.compile(r"(vcruntime|msvcp|concrt|vccorlib)\d+(_\w+)?\.dll", re.IGNORECASE)
 
 
 def main(argv=None) -> int:
@@ -46,6 +49,16 @@ def main(argv=None) -> int:
 
     if missing:
         print(f"FAIL: delivery files missing: {', '.join(missing)}")
+        return 1
+
+    msvc_runtime = sorted(
+        str(path.relative_to(args.executable.parent))
+        for path in args.executable.parent.rglob("*.dll")
+        if MSVC_RUNTIME_DLL.fullmatch(path.name)
+    )
+
+    if msvc_runtime:
+        print(f"FAIL: Microsoft Visual C++ runtime DLLs bundled: {', '.join(msvc_runtime)}")
         return 1
 
     environment = dict(os.environ)
