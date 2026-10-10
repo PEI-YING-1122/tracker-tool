@@ -1,5 +1,10 @@
 import math
 from tracker_tool.canonical import Observation, Track
+from tracker_tool.contract import (
+    CROSS_SOURCE_TRACK_NAME_COLLISION,
+    PFTRACK_SOURCE_ROLE_AUTOTRACK,
+    PFTRACK_SOURCE_ROLE_USERTRACK,
+)
 
 
 # Header variants verified in real PFTrack 2017 exports. They differ only
@@ -71,9 +76,9 @@ def read_pftrack_tracks(
 ) -> list[Track]:
     lines = native_text.splitlines()
 
-    if source_role == "AUTOTRACK":
+    if source_role == PFTRACK_SOURCE_ROLE_AUTOTRACK:
         track_id_prefix = "pf_autotrack"
-    elif source_role == "USERTRACK":
+    elif source_role == PFTRACK_SOURCE_ROLE_USERTRACK:
         track_id_prefix = "pf_usertrack"
     else:
         raise ValueError("Unsupported PFTrack source role")
@@ -187,12 +192,12 @@ def read_pftrack_source_set(
 ) -> list[Track]:
     autotrack_tracks = read_pftrack_tracks(
         autotrack_text,
-        source_role="AUTOTRACK",
+        source_role=PFTRACK_SOURCE_ROLE_AUTOTRACK,
     )
 
     usertrack_tracks = read_pftrack_tracks(
         usertrack_text,
-        source_role="USERTRACK",
+        source_role=PFTRACK_SOURCE_ROLE_USERTRACK,
     )
 
     autotrack_names = {
@@ -207,7 +212,7 @@ def read_pftrack_source_set(
 
     if autotrack_names & usertrack_names:
         raise ValueError(
-            "CROSS_SOURCE_TRACK_NAME_COLLISION"
+            CROSS_SOURCE_TRACK_NAME_COLLISION
         )
 
     return autotrack_tracks + usertrack_tracks

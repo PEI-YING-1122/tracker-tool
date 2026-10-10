@@ -2,6 +2,9 @@ import argparse
 from pathlib import Path
 
 from tracker_tool.config import ShotConfig
+from tracker_tool.contract import (
+    SOFTWARE_PFTRACK_2017,
+)
 from tracker_tool.conversion import (
     convert_pftrack_source_set,
     convert_tracks,
@@ -180,7 +183,7 @@ def main(argv=None) -> int:
             image_height=args.height,
             production_start_frame=args.start_frame,
             production_end_frame=args.end_frame,
-            source_software="PFTRACK_2017",
+            source_software=SOFTWARE_PFTRACK_2017,
             target_software=args.target,
         )
 

@@ -13,6 +13,17 @@ from tracker_tool.adapters.threed import (
 )
 from tracker_tool.canonical import validate_canonical_tracks
 from tracker_tool.config import ShotConfig
+from tracker_tool.contract import (
+    INVALID_SHOT_METADATA,
+    MISSING_REQUIRED_SHOT_METADATA,
+    OBSERVATION_OUTSIDE_SHOT_RANGE,
+    SAME_SOURCE_CONVERSION_NOT_ALLOWED,
+    SOFTWARE_3DE_R5,
+    SOFTWARE_PFTRACK_2017,
+    SOFTWARE_SYNTHEYES_2304,
+    UNSUPPORTED_SOURCE_SOFTWARE,
+    UNSUPPORTED_TARGET_SOFTWARE,
+)
 
 
 def _validate_shot_config(
@@ -29,7 +40,7 @@ def _validate_shot_config(
         for value in required_metadata
     ):
         raise ValueError(
-            "MISSING_REQUIRED_SHOT_METADATA"
+            MISSING_REQUIRED_SHOT_METADATA
         )
 
     if (
@@ -72,7 +83,7 @@ def _validate_shot_config(
         )
     ):
         raise ValueError(
-            "INVALID_SHOT_METADATA"
+            INVALID_SHOT_METADATA
         )
 
     if (
@@ -80,7 +91,7 @@ def _validate_shot_config(
         or shot_config.image_height <= 0
     ):
         raise ValueError(
-            "INVALID_SHOT_METADATA"
+            INVALID_SHOT_METADATA
         )
 
     if (
@@ -89,7 +100,7 @@ def _validate_shot_config(
         < shot_config.production_start_frame
     ):
         raise ValueError(
-            "INVALID_SHOT_METADATA"
+            INVALID_SHOT_METADATA
         )
 
 
@@ -104,7 +115,7 @@ def _validate_observation_frame_ranges(
                 < shot_config.production_start_frame
             ):
                 raise ValueError(
-                    "OBSERVATION_OUTSIDE_SHOT_RANGE"
+                    OBSERVATION_OUTSIDE_SHOT_RANGE
                 )
 
             if (
@@ -113,7 +124,7 @@ def _validate_observation_frame_ranges(
                 > shot_config.production_end_frame
             ):
                 raise ValueError(
-                    "OBSERVATION_OUTSIDE_SHOT_RANGE"
+                    OBSERVATION_OUTSIDE_SHOT_RANGE
                 )
 
 
@@ -130,22 +141,22 @@ def convert_tracks(
         == shot_config.target_software
     ):
         raise ValueError(
-            "SAME_SOURCE_CONVERSION_NOT_ALLOWED"
+            SAME_SOURCE_CONVERSION_NOT_ALLOWED
         )
 
-    if shot_config.source_software == "3DE_R5":
+    if shot_config.source_software == SOFTWARE_3DE_R5:
         tracks = read_3de_tracks(
             native_text,
             shot_config,
         )
 
-    elif shot_config.source_software == "PFTRACK_2017":
+    elif shot_config.source_software == SOFTWARE_PFTRACK_2017:
         tracks = read_pftrack_tracks(
             native_text,
             source_role=pftrack_source_role,
         )
 
-    elif shot_config.source_software == "SYNTHEYES_2304":
+    elif shot_config.source_software == SOFTWARE_SYNTHEYES_2304:
         tracks = read_syntheyes_tracks(
             native_text,
             shot_config,
@@ -153,7 +164,7 @@ def convert_tracks(
 
     else:
         raise ValueError(
-            "UNSUPPORTED_SOURCE_SOFTWARE"
+            UNSUPPORTED_SOURCE_SOFTWARE
         )
 
     validate_canonical_tracks(tracks)
@@ -163,23 +174,23 @@ def convert_tracks(
         shot_config,
     )
 
-    if shot_config.target_software == "3DE_R5":
+    if shot_config.target_software == SOFTWARE_3DE_R5:
         return write_3de_tracks(
             tracks,
             shot_config,
         )
 
-    if shot_config.target_software == "PFTRACK_2017":
+    if shot_config.target_software == SOFTWARE_PFTRACK_2017:
         return write_pftrack_tracks(tracks)
 
-    if shot_config.target_software == "SYNTHEYES_2304":
+    if shot_config.target_software == SOFTWARE_SYNTHEYES_2304:
         return write_syntheyes_tracks(
             tracks,
             shot_config,
         )
 
     raise ValueError(
-        "UNSUPPORTED_TARGET_SOFTWARE"
+        UNSUPPORTED_TARGET_SOFTWARE
     )
 
 def convert_pftrack_source_set(
@@ -189,9 +200,9 @@ def convert_pftrack_source_set(
 ) -> str:
     _validate_shot_config(shot_config)
 
-    if shot_config.source_software != "PFTRACK_2017":
+    if shot_config.source_software != SOFTWARE_PFTRACK_2017:
         raise ValueError(
-            "UNSUPPORTED_SOURCE_SOFTWARE"
+            UNSUPPORTED_SOURCE_SOFTWARE
         )
 
     if (
@@ -199,7 +210,7 @@ def convert_pftrack_source_set(
         == shot_config.target_software
     ):
         raise ValueError(
-            "SAME_SOURCE_CONVERSION_NOT_ALLOWED"
+            SAME_SOURCE_CONVERSION_NOT_ALLOWED
         )
 
     tracks = read_pftrack_source_set(
@@ -214,18 +225,18 @@ def convert_pftrack_source_set(
         shot_config,
     )
 
-    if shot_config.target_software == "3DE_R5":
+    if shot_config.target_software == SOFTWARE_3DE_R5:
         return write_3de_tracks(
             tracks,
             shot_config,
         )
 
-    if shot_config.target_software == "SYNTHEYES_2304":
+    if shot_config.target_software == SOFTWARE_SYNTHEYES_2304:
         return write_syntheyes_tracks(
             tracks,
             shot_config,
         )
 
     raise ValueError(
-        "UNSUPPORTED_TARGET_SOFTWARE"
+        UNSUPPORTED_TARGET_SOFTWARE
     )
