@@ -41,7 +41,7 @@ v1.0.2 之後，`release/1.1.x` 上的 Core 變更只有：
 | A1–A4：以 GUI 視窗轉換真實 PFTrack 2017 export | 4 / 4 與 Artist 已驗收檔案 byte-identical |
 | Windows bundle smoke test（RC commit 建置，無未 commit 修改） | PASS：主視窗顯示、正常結束；交付文件與 11 份授權全文齊全 |
 | P6 Artist GUI 驗收 | PASS（Tracking Artist 01，2026-10-10，build `fde0c16`） |
-| GitHub Actions | 見 §5 |
+| GitHub Actions（`e86b58c`，run 38036003943） | pytest windows-latest / ubuntu-latest、package windows-latest 全部 success；package job 也執行了 OpenSSL 來源檢查 |
 
 P6 之後 GUI 程式只多了 CI-11 錯誤顯示的測試，介面沒有變更。
 
@@ -83,7 +83,7 @@ P6 之後 GUI 程式只多了 CI-11 錯誤顯示的測試，介面沒有變更�
 | 2 | RC 上的 regression、golden、Error Contract、A1–A4 | **完成**（§2） |
 | 3 | Windows bundle 建置與 smoke test | **完成** |
 | 4 | 第三方聲明依實際 bundle 更新 | **完成**；未確認項目見 §3 |
-| 5 | GitHub Actions（Windows / Linux / package） | push 後確認 |
+| 5 | GitHub Actions（Windows / Linux / package） | **完成**（run 38036003943） |
 | 6 | Owner 批准 tag `v1.1.0` 與 GitHub Release | **待決定** |
 | 7 | 以 RC 重新建置內部交付 bundle | 批准後進行 |
 

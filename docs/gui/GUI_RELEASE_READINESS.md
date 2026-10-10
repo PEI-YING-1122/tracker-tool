@@ -39,7 +39,7 @@ Core     : v1.0.2（已發布，998ba70）＋ G2 / G1（contract.py、app.py）
 | B2 | Release candidate 上的完整 regression、golden、Error Contract | **完成**（468 passed；golden、Error Contract 與 v1.0.2 相同） |
 | B3 | GUI 輸出與 Artist 已驗收的 A1–A4 檔案逐 byte 相同 | **完成**（RC 上 4 / 4） |
 | B4 | CI-11 的 Native Import 影響 | 只會讓 0-track 成員停止；有效輸入的輸出逐 byte 不變（golden 與 A1 / A2 實測），**不需要重新做 Artist Import** |
-| B5 | GitHub CI（Windows / Linux / package） | 目前全部通過；release candidate 上需再確認 |
+| B5 | GitHub CI（Windows / Linux / package） | **完成**（RC `e86b58c` 全部通過） |
 
 ### C. 打包與散布
 
