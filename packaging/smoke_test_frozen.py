@@ -30,10 +30,22 @@ def main(argv=None) -> int:
         print(f"FAIL: executable not found: {args.executable}")
         return 1
 
-    build_info = args.executable.parent / "BUILD_INFO.txt"
+    required = [
+        "BUILD_INFO.txt",
+        "THIRD_PARTY_NOTICES.md",
+        "USER_GUIDE.md",
+        "USE_AND_LICENSE.md",
+        "THIRD_PARTY_LICENSES/LGPL-3.0.txt",
+        "THIRD_PARTY_LICENSES/GPL-3.0.txt",
+    ]
+    missing = [
+        name
+        for name in required
+        if not (args.executable.parent / name).is_file()
+    ]
 
-    if not build_info.is_file():
-        print(f"FAIL: build information not found: {build_info}")
+    if missing:
+        print(f"FAIL: delivery files missing: {', '.join(missing)}")
         return 1
 
     environment = dict(os.environ)

@@ -69,3 +69,17 @@ How this was established:
 - With 6.11.2 the full suite passes on Linux.
 
 Before lifting the pin, re-check a newer PySide6 on Linux / Python 3.11 with the same probe.
+
+## Delivery documents in the bundle
+
+`packaging/build_gui.py` copies these next to `TrackerTool.exe`:
+
+- `BUILD_INFO.txt`
+- `THIRD_PARTY_NOTICES.md`
+- `USER_GUIDE.md`
+- `USE_AND_LICENSE.md`
+- `THIRD_PARTY_LICENSES/`
+
+`packaging/smoke_test_frozen.py` fails if any of them is missing.
+
+Only Windows is a delivery platform. No Linux executable, public download, code signing, or auto-update is planned for the first release.

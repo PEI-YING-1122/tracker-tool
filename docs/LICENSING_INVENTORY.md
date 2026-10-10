@@ -8,6 +8,13 @@
 
 ---
 
+## 0. 交付範圍（owner 2026-10-10 決定）
+
+- 本工具供 owner 本人與公司內部 Tracking Artist 使用，Windows 為正式交付平台。
+- 不公開散布 GUI 執行檔，不新增 MIT / Apache-2.0 等專案授權。
+- GitHub repository 維持 public，不變更可見性。
+- 正式交付包須附上第三方授權文件、版本資訊與使用說明。已實作：`packaging/build_gui.py` 會把它們複製到 `TrackerTool.exe` 旁邊，smoke test 會檢查是否齊全。
+
 ## 1. 專案目前的授權狀態
 
 - Repository **沒有 LICENSE 檔**，`pyproject.toml` 也沒有宣告 license。
@@ -89,6 +96,18 @@ pytest、pytest-qt、pluggy、iniconfig、packaging、pygments、colorama、typi
 **因此目前不宣稱完全合規。**
 
 ---
+
+## 4a. 內部交付的狀態（2026-10-10）
+
+| 項目 | 狀態 |
+|---|---|
+| 第三方聲明 | `packaging/THIRD_PARTY_NOTICES.md`（內部交付版），隨 bundle 附上 |
+| 授權全文 | LGPL-3.0、GPL-3.0、Apache-2.0、Python 3.11 LICENSE、CPython incorporated software、PyInstaller COPYING（含 bootloader exception）、xz COPYING、Mesa license，隨 bundle 附在 `THIRD_PARTY_LICENSES/` |
+| Qt 6.11.2 內含的第三方元件 | 已依 Qt 官方「Licenses Used in Qt 6.11」列出元件與授權；各元件完整的版權聲明尚未逐一收錄 |
+| LGPL 原始碼與替換 | 已在聲明中列出 Qt 6.11.2 / PySide6 6.11.2 的原始碼來源，並說明 one-folder bundle 中 Qt / PySide6 為可替換的獨立檔案 |
+| 使用範圍與授權說明 | `packaging/delivery/USE_AND_LICENSE.md`，隨 bundle 附上 |
+| 使用說明 | `packaging/delivery/USER_GUIDE.md`，隨 bundle 附上 |
+| 未確認項目 | 列在 `THIRD_PARTY_NOTICES.md` §5。**不宣稱完全合規** |
 
 ## 5. 需要 owner 決定的事項
 

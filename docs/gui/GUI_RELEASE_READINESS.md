@@ -46,8 +46,8 @@ Core     : v1.0.1（已發布，ec17fb4）＋ gui/develop 上的 G2 / G1（contr
 | # | 條件 | 狀態 |
 |---|---|---|
 | C1 | Windows bundle 由 lock 過的依賴建置 | **完成**（CI 與本機都用 `uv sync --locked`；PySide6 6.11.2） |
-| C2 | **第三方授權聲明** | **草稿已準備，未接入 bundle、未確認義務**：`packaging/THIRD_PARTY_NOTICES.md`（DRAFT）、`packaging/licenses/`。部分條文尚未收集。**阻擋發布** |
-| C3 | **專案本身的授權（LICENSE）** | **暫不選定**（owner 2026-10-10）。決策依據：`docs/LICENSING_INVENTORY.md`。**阻擋公開散布** |
+| C2 | **第三方授權聲明** | **已接入 bundle（內部交付版）**：`THIRD_PARTY_NOTICES.md` 與 `THIRD_PARTY_LICENSES/` 隨附，smoke test 會檢查。未確認項目列於聲明 §5，**不宣稱完全合規** |
+| C3 | **專案本身的授權（LICENSE）** | **不新增開源授權**（owner 2026-10-10：只供內部使用、不公開散布）。內部交付附 `USE_AND_LICENSE.md` |
 | C4 | 程式碼簽章 | **不列為第一版必要條件**（owner 2026-10-10） |
 | C5 | Release 附件：GUI bundle 的 zip 檔附在 GitHub Release | 待準備（由 CI artifact 或 lock 環境建置，附 `BUILD_INFO.txt`） |
 
@@ -55,7 +55,7 @@ Core     : v1.0.1（已發布，ec17fb4）＋ gui/develop 上的 G2 / G1（contr
 
 | # | 條件 | 狀態 |
 |---|---|---|
-| D1 | README 加入 GUI 安裝與使用說明 | 未完成，可由 `GUI_TRIAL_GUIDE.md` 整理 |
+| D1 | GUI 安裝與使用說明 | **完成**：`packaging/delivery/USER_GUIDE.md`，隨 bundle 附上；內容描述的是 v1.1.0（含 v1.0.2 的 CI-11 行為） |
 | D2 | v1.0.2 / v1.1.0 release notes | 未完成 |
 | D3 | 試用指南中 CI-11 的「已知限制」 | v1.0.2 整合後需要更新 |
 

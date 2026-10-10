@@ -8,6 +8,7 @@ The bundle is written to dist/TrackerTool/ unless --dist is given.
 """
 
 import argparse
+import shutil
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -17,6 +18,16 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 APP_NAME = "TrackerTool"
 BUILD_INFO_NAME = "BUILD_INFO.txt"
+
+# Delivery documents copied next to TrackerTool.exe (internal delivery).
+PACKAGING_DIR = ROOT / "packaging"
+DELIVERY_FILES = (
+    PACKAGING_DIR / "THIRD_PARTY_NOTICES.md",
+    PACKAGING_DIR / "delivery" / "USER_GUIDE.md",
+    PACKAGING_DIR / "delivery" / "USE_AND_LICENSE.md",
+)
+LICENSE_TEXTS_DIR = PACKAGING_DIR / "licenses"
+LICENSE_TEXTS_TARGET = "THIRD_PARTY_LICENSES"
 
 
 def build_command(dist_dir: Path, work_dir: Path) -> list[str]:
@@ -55,9 +66,20 @@ def main(argv=None) -> int:
     result = subprocess.call(build_command(args.dist, args.work))
 
     if result == 0:
-        write_build_info(args.dist / APP_NAME / BUILD_INFO_NAME)
+        bundle = args.dist / APP_NAME
+        write_build_info(bundle / BUILD_INFO_NAME)
+        copy_delivery_documents(bundle)
 
     return result
+
+
+def copy_delivery_documents(bundle: Path) -> None:
+    for source in DELIVERY_FILES:
+        shutil.copy2(source, bundle / source.name)
+
+    target = bundle / LICENSE_TEXTS_TARGET
+    shutil.rmtree(target, ignore_errors=True)
+    shutil.copytree(LICENSE_TEXTS_DIR, target)
 
 
 def _git(*args) -> str:
