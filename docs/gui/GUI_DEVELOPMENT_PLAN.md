@@ -4,7 +4,7 @@
 Status        : APPROVED IN PRINCIPLE (2026-10-09), with the decisions recorded in §1
 Core baseline : v1.0.1 tag → ec17fb4 (released 2026-10-10), merged into gui/develop (59a6540);
                 f72e44e cherry-picked (8091f75)
-Phase         : P1 done (G2, G1, GUI wired to tracker_tool.app). Next: P5 polish, P6 artist smoke, CI-11 before any GUI release.
+Phase         : P1 and P5 done. P6 artist trial prepared (docs/gui/GUI_TRIAL_GUIDE.md). CI-11 before any GUI release.
 Companion     : docs/gui/CORE_ISSUES_FROM_GUI_REVIEW.md
 ```
 
@@ -374,5 +374,17 @@ pytest-qt with `QT_QPA_PLATFORM=offscreen`:
 
 - **CI-11 (#3):** decided, not implemented. A source-set member with 0 tracks is still accepted by Core. The GUI shows the CLI behaviour and does not pre-check it. D10 requires the Core change before P4 ships.
 - **UI language:** English, as in the skeleton. Localisation is a product decision.
-- **Formal-code input highlighting (§7):** not implemented yet (P5).
 - **P6:** artist smoke test of the GUI in production.
+
+## 16. P5 Status (2026-10-10)
+
+| Commit | Content |
+|---|---|
+| `b991364` | PySide6 pinned `<6.12` (6.11.2). 6.12.0 has a Linux / Python 3.11 refcount bug; see GUI_PACKAGING.md. |
+| `c9a4b89` | Formal-error section highlighting; overwrite confirmation for a typed path to an existing output (cancel leaves the file untouched); "Open output folder"; tests fail fast on any real modal dialog. |
+| `db428be` | `BUILD_INFO.txt` in bundles (commit, uncommitted flag, build time, versions), included in packaged diagnostics; smoke test requires it. |
+
+- **Tests:** full suite 453 passed, 2 skipped. GUI 101 passed on native Windows.
+- **CI:** Windows, Linux, and package jobs all green.
+
+P6: `docs/gui/GUI_TRIAL_GUIDE.md` (artist-facing, Traditional Chinese). The trial bundle is built from a clean commit with the locked environment.
