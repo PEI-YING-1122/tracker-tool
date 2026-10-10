@@ -523,3 +523,30 @@ def test_form_is_usable_again_after_failure(qtbot, window, tmp_path, three_de_in
 
     assert _convert(qtbot, window) == "PASS"
     assert output.exists()
+
+
+def test_source_set_member_without_tracks_is_shown_as_core_rejection(
+    qtbot,
+    window,
+    tmp_path,
+):
+    # Core v1.0.2 (CI-11) stops on an empty source-set member; the GUI only
+    # presents the Core error.
+    autotrack = tmp_path / "auto.txt"
+    usertrack = tmp_path / "user.txt"
+    output = tmp_path / "out.txt"
+    autotrack.write_text("", encoding="utf-8")
+    usertrack.write_text('"A"\n1\n1\n1001 1 2 1.0\n', encoding="utf-8")
+    _fill(
+        window,
+        source="PFTRACK_2017",
+        target="3DE_R5",
+        autotrack=autotrack,
+        usertrack=usertrack,
+        output=output,
+    )
+
+    assert _convert(qtbot, window) == "FAIL — Core rejected the input"
+    assert "AutoTrack file contains no tracks" in window.result_panel.message.text()
+    assert window.attention_sections() == []
+    assert not output.exists()
