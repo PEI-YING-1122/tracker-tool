@@ -26,8 +26,8 @@ Core     : v1.0.1（已發布，ec17fb4）＋ gui/develop 上的 G2 / G1（contr
 
 | # | 條件 | 狀態 |
 |---|---|---|
-| A1 | CI-11 修正 | **已實作，待批准**：branch `fix/ci11-source-set-empty-member`（`5b9912f`），尚未合併 |
-| A2 | Core v1.0.2 發布（含 tag 與 GitHub Release） | 待 A1 批准 |
+| A1 | CI-11 修正 | **完成**：owner 批准版本規劃（2026-10-10）後，合併至 `release/1.0.x`（merge `ba5a87c`）；版本號 1.0.2（`f14253d`） |
+| A2 | Core v1.0.2 發布（含 tag 與 GitHub Release） | **RC 就緒，待批准**（`validation/RELEASE_READINESS_v1.0.2.md`，release/1.0.x `998ba70`，CI 通過） |
 | A3 | v1.0.2 整合進 `gui/develop` | 預演已完成：無衝突，465 passed |
 | A4 | G2 / G1 不改變 Core 行為 | **完成**：Golden 10/10、Error Contract 20 情境與 v1.0.1 相同、`test_cli.py` 未修改 |
 
@@ -46,9 +46,9 @@ Core     : v1.0.1（已發布，ec17fb4）＋ gui/develop 上的 G2 / G1（contr
 | # | 條件 | 狀態 |
 |---|---|---|
 | C1 | Windows bundle 由 lock 過的依賴建置 | **完成**（CI 與本機都用 `uv sync --locked`；PySide6 6.11.2） |
-| C2 | **第三方授權聲明**：PySide6 / Qt（LGPL-3.0）、shiboken6、Python（PSF）、PyInstaller bootloader（GPL with exception） | **未完成，阻擋發布**。目前 bundle 中**沒有任何**授權檔。需要加入 LGPL / GPL 全文與 Qt 聲明，並說明可替換 Qt 函式庫（one-folder bundle 中 Qt DLL 是獨立檔案，符合可替換的要求） |
-| C3 | **專案本身的授權（LICENSE）** | **未決定，阻擋公開散布**。repository 目前沒有 LICENSE 檔，這是 owner 的決策 |
-| C4 | 程式碼簽章 | 待決定。P6 試用未遇到阻擋，但 production 工作站的防毒政策尚未確認 |
+| C2 | **第三方授權聲明** | **草稿已準備，未接入 bundle、未確認義務**：`packaging/THIRD_PARTY_NOTICES.md`（DRAFT）、`packaging/licenses/`。部分條文尚未收集。**阻擋發布** |
+| C3 | **專案本身的授權（LICENSE）** | **暫不選定**（owner 2026-10-10）。決策依據：`docs/LICENSING_INVENTORY.md`。**阻擋公開散布** |
+| C4 | 程式碼簽章 | **不列為第一版必要條件**（owner 2026-10-10） |
 | C5 | Release 附件：GUI bundle 的 zip 檔附在 GitHub Release | 待準備（由 CI artifact 或 lock 環境建置，附 `BUILD_INFO.txt`） |
 
 ### D. 文件
