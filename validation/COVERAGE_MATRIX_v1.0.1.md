@@ -4,8 +4,7 @@
 Candidate : release/1.0.x (branched from v1.0.0 / 79fd42d)
 Status    : NOT RELEASED. Release decision pending (see validation/RELEASE_READINESS_v1.0.1.md).
 CI-13     : resolved by C2 (approved 2026-10-10), merged into release/1.0.x
-Done      : Artist Native Import A1–A4 reported PASS (report received 2026-10-10)
-Pending   : A1–A4 record fields: import date, software build, artist (section 5)
+Done      : Artist Native Import A1–A4 PASS (2026-10-10, Tracking Artist 01; software builds not recorded)
 ```
 
 **Automated test PASS is not Native Import PASS.** This document labels every kind of evidence separately. Only **E-A** and **E-F** are Artist Imports in the real target software.
@@ -49,12 +48,12 @@ Production native files used for this review are kept outside this public reposi
 | 2 | 3DE → SynthEyes | PASS, Golden 01 | same as #1 | same as #1 | **Previously Verified** | same as #1 |
 | 3 | SynthEyes → 3DE | PASS, Golden 03 | CI-13 C2: stops only on a tracker named exactly `#` (not present in any verified input). CI-3 rejects only names a SynthEyes source cannot produce | 2 clean exports convert; the 5 re-exports with a `#` tracker stop with the CI-13 guard message | **Previously Verified** | E-A + E-B |
 | 4 | SynthEyes → PFTrack | PASS, Golden 03 | CI-13 C2 (as #3) | same as #3 | **Previously Verified** | E-A + E-B |
-| 5 | PFTrack AutoTrack → 3DE | PASS, Golden 02 (synthetic headerless input) | **CI-1**, CI-2, CI-3 | v1.0.0: 0 of 11 parse. Candidate: 11 of 11 | **Revalidated: Artist Import PASS** | E-F: **A3 PASS** (record fields pending) |
-| 6 | PFTrack AutoTrack → SynthEyes | PASS, Golden 02 | CI-1, CI-2 | same as #5 | **Revalidated: Artist Import PASS** | E-F: **A4 PASS** (record fields pending) |
+| 5 | PFTrack AutoTrack → 3DE | PASS, Golden 02 (synthetic headerless input) | **CI-1**, CI-2, CI-3 | v1.0.0: 0 of 11 parse. Candidate: 11 of 11 | **Revalidated: Artist Import PASS** | E-F: **A3 PASS** |
+| 6 | PFTrack AutoTrack → SynthEyes | PASS, Golden 02 | CI-1, CI-2 | same as #5 | **Revalidated: Artist Import PASS** | E-F: **A4 PASS** |
 | 7 | PFTrack UserTrack → 3DE | **No record** (DOC-1) | CI-1, CI-2, CI-3 | same as #5 | **Not Verified (no Artist Import) — covered by Automated Equivalence** | E-E (automated) + A3 PASS (artist, same output bytes). No separate import |
 | 8 | PFTrack UserTrack → SynthEyes | **No record** (DOC-1) | CI-1, CI-2 | same as #5 | **Not Verified (no Artist Import) — covered by Automated Equivalence** | E-E (automated) + A4 PASS (artist) |
-| 9 | PFTrack Source Set → 3DE | PASS, Golden 05 (synthetic headerless) | CI-1, CI-2, CI-3 | real Test 08 set parses: 14 / 664 | **Revalidated: Artist Import PASS** | E-F: **A1 PASS** (record fields pending) |
-| 10 | PFTrack Source Set → SynthEyes | PASS, Golden 05 | CI-1, CI-2 | same as #9 | **Revalidated: Artist Import PASS** | E-F: **A2 PASS** (record fields pending) |
+| 9 | PFTrack Source Set → 3DE | PASS, Golden 05 (synthetic headerless) | CI-1, CI-2, CI-3 | real Test 08 set parses: 14 / 664 | **Revalidated: Artist Import PASS** | E-F: **A1 PASS** |
+| 10 | PFTrack Source Set → SynthEyes | PASS, Golden 05 | CI-1, CI-2 | same as #9 | **Revalidated: Artist Import PASS** | E-F: **A2 PASS** |
 
 ### Why #1–#4 need no new import
 
@@ -153,14 +152,14 @@ One real 3DE R5 production export (P-1, 43 points) contains 3 points with sample
 
 ### Native Import record — A1–A4
 
-Results as reported by the artist (report received 2026-10-10). **Artist checks** are visual checks in the real software. **Automated checks** are counts computed by the program from the exact files that were imported. The two kinds are kept apart.
+Results as reported by the artist. Record: date **2026-10-10**, artist **Tracking Artist 01**, 3DEqualizer **R5** and SynthEyes **2304**. The exact software builds were **not recorded** at import time and are not inferred. **Artist checks** are visual checks in the real software. **Automated checks** are counts computed by the program from the exact files that were imported. The two kinds are kept apart.
 
 | Case | Target | Import date | Software build | Artist | File Import | Track count (artist) | Point Position | Frame Mapping | Natural Gap | Editability | Result |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| A1 | 3DEqualizer R5 | *pending* | *pending* | *pending* | PASS | 14, correct | PASS | visually normal | visually normal | PASS | **PASS** |
-| A2 | SynthEyes 2304 | *pending* | *pending* | *pending* | PASS | 14, correct | PASS | visually normal | visually normal | PASS | **PASS** |
-| A3 | 3DEqualizer R5 | *pending* | *pending* | *pending* | PASS | 9, correct | PASS | visually normal | visually normal | PASS | **PASS** |
-| A4 | SynthEyes 2304 | *pending* | *pending* | *pending* | PASS | 9, correct | PASS | visually normal | visually normal | PASS | **PASS** |
+| A1 | 3DEqualizer R5 | 2026-10-10 | not recorded | Tracking Artist 01 | PASS | 14, correct | PASS | visually normal | visually normal | PASS | **PASS** |
+| A2 | SynthEyes 2304 | 2026-10-10 | not recorded | Tracking Artist 01 | PASS | 14, correct | PASS | visually normal | visually normal | PASS | **PASS** |
+| A3 | 3DEqualizer R5 | 2026-10-10 | not recorded | Tracking Artist 01 | PASS | 9, correct | PASS | visually normal | visually normal | PASS | **PASS** |
+| A4 | SynthEyes 2304 | 2026-10-10 | not recorded | Tracking Artist 01 | PASS | 9, correct | PASS | visually normal | visually normal | PASS | **PASS** |
 
 "Visually normal" is recorded as a visual check, not as an exact per-observation verification.
 
@@ -194,5 +193,5 @@ v1.0.1 may be tagged only when **all** of the following hold:
 1. CI-13 resolved: C2 approved, merged, and regression-tested. **Done.**
 2. CI-12 is fixed and regression-tested. **Done.**
 3. The full test suite passes locally and in GitHub Actions (Windows and Linux).
-4. A1–A4 are recorded as PASS in the table above. **Done**, except the import date, software build, and artist fields.
+4. A1–A4 are recorded as PASS in the table above. **Done** (software builds not recorded).
 5. `validation/README.md` gains the v1.0.1 Native Import records.

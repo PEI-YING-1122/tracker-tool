@@ -1,10 +1,11 @@
 # Tracker Tool Core v1.0.1 — Release Readiness Report
 
 ```text
-Candidate     : release/1.0.x @ 5772288（自 v1.0.0 / 79fd42d 分支）
+Candidate     : release/1.0.x HEAD（自 v1.0.0 / 79fd42d 分支）
+                程式碼自 c29a6da 起未再變更，之後只有文件 commit
 Package       : tracker-tool 1.0.1
 Report date   : 2026-10-10
-Status        : 技術驗收完成，等待 project owner 決定是否正式發布
+Status        : 技術驗收與紀錄均已完成，等待 project owner 決定是否正式發布
 Not done      : v1.0.1 tag、GitHub Release、合併至 main（皆須 owner 明確批准）
 ```
 
@@ -12,14 +13,11 @@ Not done      : v1.0.1 tag、GitHub Release、合併至 main（皆須 owner 明�
 
 ## 1. 結論
 
-**技術面可發布。** 所有 release-gate 技術項目都已完成並通過，詳見 §5。
+**可發布。** 所有 release-gate 項目都已完成並通過，詳見 §5。
 
-正式發布前還剩兩項非技術事項（§7）：
+只剩一項：owner 的正式發布批准（§7）。
 
-1. A1–A4 Native Import 紀錄缺 import 日期、軟體 build、Artist 姓名。
-2. owner 的正式發布批准。
-
-這兩項都不涉及程式修改。
+A1–A4 紀錄已補齊：日期 2026-10-10、Artist「Tracking Artist 01」。軟體 build 當時未記錄，依實際狀況登記為「未記錄」，不做推測。
 
 ---
 
@@ -126,8 +124,8 @@ src/tracker_tool/adapters/syntheyes/reader.py   CI-13 (C2)
 | 1 | CI-13 resolved | **完成**：C2 已核准、合併並通過 regression |
 | 2 | CI-12 fixed and regression-tested | **完成** |
 | 3 | 完整 test suite 在本機與 GitHub Actions（Windows / Linux）通過 | **完成** |
-| 4 | A1–A4 Native Import PASS | **完成**（Artist 回報）。紀錄欄位待補：日期、build、Artist |
-| 5 | `validation/README.md` 已加入 v1.0.1 Native Import 紀錄 | **完成**（同上欄位待補） |
+| 4 | A1–A4 Native Import PASS | **完成**：2026-10-10，Tracking Artist 01。3DEqualizer R5 / SynthEyes 2304 的 build 未記錄。Observation 數為自動化核對 |
+| 5 | `validation/README.md` 已加入 v1.0.1 Native Import 紀錄 | **完成** |
 | 6 | Owner 正式批准 release | **待決定** |
 
 ---
@@ -147,9 +145,8 @@ src/tracker_tool/adapters/syntheyes/reader.py   CI-13 (C2)
 
 ## 7. 正式發布前尚待處理
 
-1. **補齊 A1–A4 紀錄欄位**（owner / Artist 提供）：import 日期、3DEqualizer R5 build、SynthEyes 2304 build、Artist 姓名。
-2. **Owner 正式批准 release。**
-3. **GitHub Issue / PR 更新**：需 `gh` 以官方流程登入後執行。
+1. **Owner 正式批准 release。**
+2. **GitHub Issue / PR 更新**：需 `gh` 以官方流程登入後執行。
    - #1 CI-13 → 以 C2 resolved。
    - #2 CI-12 → fixed。
    - PR #8 checklist 更新。
@@ -157,8 +154,7 @@ src/tracker_tool/adapters/syntheyes/reader.py   CI-13 (C2)
 
 ## 8. 批准後的發布程序（建議）
 
-1. 將補齊的紀錄欄位寫入 `validation/README.md` 與 Coverage Matrix，並 commit（文件變更）。
-2. 在 `release/1.0.x` HEAD 建立 annotated tag `v1.0.1`。`v1.0.0` 保持不變。
-3. 建立 GitHub Release `v1.0.1`，附 release notes（§2 摘要）。
-4. 經 owner 批准後，透過 PR #8 合併至 `main`。
-5. 將 `v1.0.1` merge 進 `gui/develop`（合併預演已驗證無衝突），再依 GUI 計畫進行 `f72e44e` cherry-pick 與 G2 / G1。
+1. 在 `release/1.0.x` HEAD 建立 annotated tag `v1.0.1`，tag message 見 `validation/RELEASE_NOTES_v1.0.1.md`。`v1.0.0` 保持不變。
+2. 建立 GitHub Release `v1.0.1`，內文使用 `validation/RELEASE_NOTES_v1.0.1.md`。
+3. 經 owner 另外批准後，透過 PR #8 合併至 `main`。
+4. 將 `v1.0.1` merge 進 `gui/develop`（合併預演已驗證無衝突），再依 GUI 計畫進行 `f72e44e` cherry-pick 與 G2 / G1。

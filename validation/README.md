@@ -168,7 +168,12 @@ These cases close the CI-1 gate. The inputs are **real** PFTrack 2017 exports (p
 
 Full record, automated counts, session notes and the evidence types: `validation/COVERAGE_MATRIX_v1.0.1.md`.
 
-Record fields still pending: import date, software build, artist.
+Validation record:
+- Date: 2026-10-10
+- Artist: Tracking Artist 01
+- 3DEqualizer: R5 (build not recorded)
+- SynthEyes: 2304 (build not recorded)
+- Observation counts: automated verification of the converted files, not counted manually
 
 ## A1 / A2 — Test 08 PFTrack Source Set (AutoTrack + UserTrack)
 
