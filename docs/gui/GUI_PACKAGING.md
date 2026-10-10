@@ -12,7 +12,7 @@ Status: **Windows one-folder bundle verified** (local build and CI). Not yet a r
 | Entry script | `packaging/launch_gui.py` |
 | Build script | `packaging/build_gui.py` |
 | Output | `dist/TrackerTool/TrackerTool.exe` plus `_internal/` |
-| Size | about 91 MB unpacked (PySide6-Essentials 6.12, Python 3.11) |
+| Size | about 90 MB unpacked (PySide6-Essentials 6.11.2, Python 3.11) |
 | Build time | about 25 s locally |
 | Package metadata | `--copy-metadata tracker-tool`, so the window shows the Core version |
 
@@ -55,3 +55,17 @@ The `package (windows-latest)` job in `.github/workflows/tests.yml` runs after b
 | Clean machine without Python | Covered in principle by the CI runner. Still needs a check on a production workstation |
 | Non-ASCII install paths and UNC paths | Open. Test once conversion works (P3) |
 | Version shown in the GUI | Shows the bundled `tracker-tool` metadata. `gui/develop` reports 0.1.0 until v1.0.1 is merged in |
+
+## PySide6 version pin
+
+`PySide6-Essentials>=6.8,<6.12` (locked: 6.11.2).
+
+PySide6 6.12.0 (released 2026-10-08) on Linux with Python 3.11 drops references to `None` / `True` on ordinary calls, for example void methods and `Signal().emit()`. After enough calls the interpreter aborts at exit with `Fatal Python error: bool_dealloc` / `none_dealloc`.
+
+How this was established:
+
+- CI probes on `ubuntu-latest` measured `sys.getrefcount` drift per operation.
+- The Windows build and PySide6 6.11.2 show no drift.
+- With 6.11.2 the full suite passes on Linux.
+
+Before lifting the pin, re-check a newer PySide6 on Linux / Python 3.11 with the same probe.

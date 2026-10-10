@@ -11,7 +11,7 @@ dependencies = []
 
 [project.optional-dependencies]
 gui = [
-    "PySide6-Essentials>=6.8,<7",
+    "PySide6-Essentials>=6.8,<6.12",
 ]
 
 [project.scripts]
@@ -33,7 +33,7 @@ dev = [
     # pytest-qt fails at startup without a Qt binding, so the dev
     # environment always carries the binding too. Runtime stays dependency-free.
     "pytest-qt>=4.4",
-    "PySide6-Essentials>=6.8,<7",
+    "PySide6-Essentials>=6.8,<6.12",
 ]
 packaging = [
     "pyinstaller>=6.10",
