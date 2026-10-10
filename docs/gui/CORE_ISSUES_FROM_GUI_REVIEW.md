@@ -1,12 +1,12 @@
 # Core Issues Found During GUI Architecture Review
 
-Status:
+Status (2026-10-10):
 
-- CI-1, CI-2, and CI-3 are **fixed on `release/1.0.x`**. The branch is pushed and CI is green on Windows and Linux. It is **not released**.
-- **CI-13 is a v1.0.1 release blocker**, waiting for artist evidence A6.
-- CI-12 is waiting for A5.
-- Everything else is open.
-- The authoritative release status is `validation/COVERAGE_MATRIX_v1.0.1.md` on `release/1.0.x`. See also §7 and §8.
+- **Released in v1.0.1:** CI-1, CI-2, CI-3, CI-12, and CI-13 (option C2, conservative input guard).
+  - Release: https://github.com/PEI-YING-1122/tracker-tool/releases/tag/v1.0.1 (tag `v1.0.1` → `ec17fb4`).
+  - Release records: `validation/COVERAGE_MATRIX_v1.0.1.md`, `validation/RELEASE_READINESS_v1.0.1.md`.
+- **Still open, tracked as GitHub issues:** CI-4 (#4), CI-6 (#5), CI-11 (#3), hardening CI-5 / CI-7 and deferred CI-8 / CI-9 / CI-10 (#6), validation record gaps (#7), SPEC-4 (#9).
+- Sections §1–§8 below are the original findings and decisions in chronological order. Status statements inside them reflect the time they were written.
 
 Production files are referred to by case ID only. This repository is public.
 

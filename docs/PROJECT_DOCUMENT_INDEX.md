@@ -20,10 +20,15 @@ Runtime deps:     none
 Dev deps:         pytest
 Test suite:       176 tests, all passing on f72e44e
 
-Branches (2026-10-09):
-  release/1.0.x   v1.0.1 release candidate (CI-1/2/3, regression tests, version 1.0.1).
-                  Pushed; NOT released. Status: validation/COVERAGE_MATRIX_v1.0.1.md
-  gui/develop     GUI phase. Core code identical to v1.0.0 until v1.0.1 is merged in.
+Releases:
+  v1.0.1          tag → ec17fb4, released 2026-10-10
+                  https://github.com/PEI-YING-1122/tracker-tool/releases/tag/v1.0.1
+                  Records: validation/RELEASE_READINESS_v1.0.1.md, COVERAGE_MATRIX_v1.0.1.md
+
+Branches (2026-10-10):
+  release/1.0.x   v1.0.x maintenance line (v1.0.1 released from it).
+                  Merge into main: PR #8, pending owner approval
+  gui/develop     GUI phase. Core baseline v1.0.1 (merged), plus f72e44e (cherry-picked).
 CI:               .github/workflows/tests.yml (pytest on Windows and Linux, uv --locked)
 ```
 

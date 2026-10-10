@@ -2,9 +2,9 @@
 
 ```text
 Status        : APPROVED IN PRINCIPLE (2026-10-09), with the decisions recorded in §1
-Core baseline : v1.0.0 tag → 79fd42d (immutable)
-Phase         : P2 preparation on gui/develop (GUI skeleton, dependencies, test infrastructure).
-                Core integration (P1) waits for v1.0.1.
+Core baseline : v1.0.1 tag → ec17fb4 (released 2026-10-10), merged into gui/develop (59a6540);
+                f72e44e cherry-picked (8091f75)
+Phase         : P1 Core integration boundary (G2 → G1) on gui/develop; P2 skeleton done.
 Companion     : docs/gui/CORE_ISSUES_FROM_GUI_REVIEW.md
 ```
 
