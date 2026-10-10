@@ -656,6 +656,12 @@ SynthEyes 來源中若有名稱完全等於 `#` 的 tracker，conversion 會停�
 
 工具不會自動刪除或略過該 tracker。`#1`、`Tracker#1` 等其他名稱不受影響。
 
+### PFTrack source set member without tracks (v1.0.2)
+
+`convert-pftrack-source-set` 的 AutoTrack 與 UserTrack 檔案都必須至少包含 1 條 track。
+
+任一檔案沒有 track 時（例如空檔案，或只有 header），conversion 會停止並說明是哪一個檔案。工具不會只用另一個檔案轉換。
+
 ---
 
 # Natural Gaps

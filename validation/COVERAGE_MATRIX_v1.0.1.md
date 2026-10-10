@@ -1,8 +1,8 @@
 # Native Import Validation Coverage — v1.0.1 Release Candidate
 
 ```text
-Candidate : release/1.0.x (branched from v1.0.0 / 79fd42d)
-Status    : NOT RELEASED. Release decision pending (see validation/RELEASE_READINESS_v1.0.1.md).
+Release   : v1.0.1 → ec17fb48b9dce12a13e22c23a1df5ef787bb5183 (branched from v1.0.0 / 79fd42d)
+Status    : RELEASED 2026-10-10 — https://github.com/PEI-YING-1122/tracker-tool/releases/tag/v1.0.1
 CI-13     : resolved by C2 (approved 2026-10-10), merged into release/1.0.x
 Done      : Artist Native Import A1–A4 PASS (2026-10-10, Tracking Artist 01; software builds not recorded)
 ```

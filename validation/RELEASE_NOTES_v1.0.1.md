@@ -1,10 +1,10 @@
-# Tracker Tool v1.0.1 — Release Notes (draft, not released)
+# Tracker Tool v1.0.1 — Release Notes
 
 ```text
-Tag (proposed) : v1.0.1  (annotated, on release/1.0.x)
+Tag            : v1.0.1  (annotated) → ec17fb48b9dce12a13e22c23a1df5ef787bb5183
 Tag message    : Artist 2D Track Interchange v1.0.1
 Release title  : Tracker Tool v1.0.1 — Artist 2D Track Interchange bugfix release
-Status         : DRAFT. Not tagged, not released. Awaiting owner approval.
+Status         : RELEASED 2026-10-10 — https://github.com/PEI-YING-1122/tracker-tool/releases/tag/v1.0.1
 ```
 
 The GitHub Release body is the section below.
