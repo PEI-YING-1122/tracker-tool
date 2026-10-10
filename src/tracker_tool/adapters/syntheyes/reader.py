@@ -2,6 +2,13 @@ import math
 from tracker_tool.canonical import Observation, Track
 from tracker_tool.config import ShotConfig
 
+# Conservative input guard against a source data integrity risk (v1.0.1
+# CI-13). In every verified case, a tracker named "#" came from SynthEyes
+# importing a file whose first line started with "#". Conversion stops so
+# the tracker is never carried into the target silently; it is not deleted
+# or skipped.
+UNCONVERTED_TRACKER_NAME = "#"
+
 
 def read_syntheyes_tracks(
     native_text: str,
@@ -19,6 +26,16 @@ def read_syntheyes_tracks(
             )
 
         tracker_name, frame_text, u_text, v_text, _outcome_text = fields
+
+        if tracker_name == UNCONVERTED_TRACKER_NAME:
+            raise ValueError(
+                "SynthEyes tracker named '#' is not converted (source data "
+                "integrity guard). In verified cases this tracker came from "
+                "importing a file with a '#' comment line. Check it in "
+                "SynthEyes: delete it if it is not tracking data, or rename "
+                "it, then export again."
+            )
+
         try:
             outcome = int(_outcome_text)
         except ValueError as exc:

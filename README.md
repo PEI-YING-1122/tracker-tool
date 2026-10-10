@@ -614,6 +614,50 @@ Point0001_2
 ```
 
 
+# Native Source Format Notes (v1.0.1)
+
+### PFTrack 2017 export
+
+Reader 接受真實 PFTrack 2017 export 的 layout：
+
+```text
+# "Name"
+# clipNumber
+# frameCount
+# frame, xpos, ypos, similarity, zdepth     (或不含 zdepth 的 variant)
+
+"<TRACK_NAME>"
+...
+```
+
+- header 只接受兩種已驗證的 variant
+- 每個 track block 前必須剛好一行空行
+- 不含 header、也不含空行的 layout 照舊支援
+
+其他 layout 一律拒絕，例如：未知 header、檔案中段出現 `#` 行、多餘或結尾的空行。
+
+### 3DEqualizer R5 point field
+
+Track name 下一行的值接受 `0` 與 `3`。這兩個值都出現在真實 3DE R5 export 中，而且不影響 observation。
+
+其他值一律拒絕。Writer 一律輸出 `0`。
+
+### 3DEqualizer R5 target track name
+
+Track name 若有前後空白，無法以 3DE native grammar 無損表示，因此拒絕輸出。
+
+不會自動 trim 或 rename。
+
+### SynthEyes 2304 tracker named `#`
+
+SynthEyes 來源中若有名稱完全等於 `#` 的 tracker，conversion 會停止並說明原因。
+
+在已驗證的案例中，此 tracker 都來自 SynthEyes 匯入了第一行為 `#` comment 的檔案。處理方式：在 SynthEyes 中檢查該 tracker，若不是 tracking data 則刪除，否則改名，再重新匯出。
+
+工具不會自動刪除或略過該 tracker。`#1`、`Tracker#1` 等其他名稱不受影響。
+
+---
+
 # Natural Gaps
 
 Natural frame gaps 會保留。

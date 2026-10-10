@@ -89,13 +89,26 @@ Track Name 後目前 verified native field：
 
 ```text
 0
+3
 ```
+
+兩個值都出現在真實 3DEqualizer R5 export 中（v1.0.1 CI-12）。
+
+Evidence：將 static field 為 `0` 的檔案匯入 3DE R5 再匯出，所有 point 變為 `3`；track name、frame set 完全相同，座標差 ≤ 4.6e-13 px（Test 04 3DE round-trip，PRACTICALLY_LOSSLESS）。同一流程的 Test 06 匯出仍為 `0`。因此此值是 3DE 端的 point 屬性，不影響 observation。
+
+Reader：
+
+- 只接受 verified 值 `0`、`3`（exact text，不含 whitespace）
+- 其他值（例如 `1`、`00`、`3.0`）在取得真實 export 證據前一律拒絕
+- 值不進入 Canonical，也不影響 observation
 
 Writer 使用：
 
 ```text
 0
 ```
+
+`0` 為已通過 3DE R5 Artist Import 的值。
 
 但 semantic meaning 尚未正式確認。
 
@@ -270,6 +283,30 @@ Auto000084
 ```text
 pf_autotrack::Auto000084
 ```
+
+### Target Name Representability
+
+3DE Track Name 是 structural line，依 §3 不得有 leading / trailing whitespace。
+
+因此 Canonical `track_name` 若有 leading 或 trailing whitespace，例如：
+
+```text
+" Point0001"
+"Point0001 "
+```
+
+無法由目前 verified 3DE grammar 無損表示。
+
+Writer 不得：
+
+- trim
+- rename
+- replace whitespace
+- quote / escape into an unverified private syntax
+
+Writer 必須拒絕輸出（v1.0.1 CI-3）。
+
+Track Name 內部 whitespace（例如 `Point 001`）不屬此規則；其 3DE R5 Artist Import 尚未驗證。
 
 ---
 
