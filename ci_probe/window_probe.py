@@ -18,12 +18,14 @@ tmp = Path(tempfile.mkdtemp())
 
 def drift(name, action, n=200):
     gc.collect()
-    t0, f0 = sys.getrefcount(True), sys.getrefcount(False)
+    t0, f0, n0 = sys.getrefcount(True), sys.getrefcount(False), sys.getrefcount(None)
     for i in range(n):
         action(i)
         app.processEvents()
     gc.collect()
-    print(f"{name:45s} dTrue={sys.getrefcount(True) - t0:+6d} dFalse={sys.getrefcount(False) - f0:+6d}  (n={n})", flush=True)
+    dt, df, dn = sys.getrefcount(True) - t0, sys.getrefcount(False) - f0, sys.getrefcount(None) - n0
+    flag = "  <-- NEGATIVE DRIFT" if min(dt, df, dn) < -5 else ""
+    print(f"{name:45s} dTrue={dt:+6d} dFalse={df:+6d} dNone={dn:+6d}  (n={n}){flag}", flush=True)
 
 
 def prefs():
@@ -38,11 +40,12 @@ drift("TargetSection create/delete", lambda i: TargetSection().deleteLater())
 drift("MainWindow create/close/delete", lambda i: (lambda w: (w.close(), w.deleteLater()))(MainWindow(preferences=prefs())), n=50)
 
 w = MainWindow(preferences=prefs())
-drift("select source (combo index)", lambda i: w.source.software.setCurrentIndex(1 + i % 3))
+drift("select source (combo index)", lambda i: w.source.software.setCurrentIndex(i % 4))
 drift("toggle source-set radio", lambda i: (w.source.software.setCurrentIndex(2), (w.source.source_set_mode if i % 2 else w.source.single_file_mode).setChecked(True)))
 drift("target.set_source", lambda i: w.target.set_source(("3DE_R5", "PFTRACK_2017", "SYNTHEYES_2304")[i % 3]))
 drift("can_convert", lambda i: w.can_convert())
 drift("isVisibleTo", lambda i: w.source.role.isVisibleTo(w.source))
+drift("software_id / role_id", lambda i: (w.source.software_id(), w.source.role_id(), w.target.software_id()))
 drift("item_enabled", lambda i: w.target.item_enabled("3DE_R5"))
 drift("result_panel.show_failure", lambda i: w.result_panel.show_failure("X", "y", details="z", diagnostics="d"))
 drift("result_panel.show_success", lambda i: w.result_panel.show_success("o", diagnostics="d"))
