@@ -50,6 +50,63 @@ frame xpos ypos similarity
 
 Header 雖列 zdepth，但不得自動 fabricate zdepth。
 
+### Verified Header Variants
+
+真實 PFTrack 2017 export 已確認兩種 header，只有第 4 行不同：
+
+```text
+# frame, xpos, ypos, similarity, zdepth
+```
+
+```text
+# frame, xpos, ypos, similarity
+```
+
+兩種 variant 的 observation rows 都是 4 numeric values。
+
+### Reader Layout Contract
+
+Reader 只接受兩種 verified layout：
+
+```text
+Layout A — headerless
+<block>
+<block>
+...
+```
+
+不含 header，也不含任何 blank line。此為 v1.0.0 已支援的 layout，也是 PFTrack Writer 的輸出 layout。
+
+```text
+Layout B — PFTrack 2017 native export
+<verified header, 4 lines, exact text>
+<blank line>
+<block>
+<blank line>
+<block>
+...
+```
+
+每個 track block 前必須剛好一行 blank separator line（包含第一個 block）。
+
+已觀察的真實 export 不含 trailing blank line，因此 trailing blank line 不屬於 verified layout。
+
+Reader 必須拒絕：
+
+- unknown header（任何不完全等於 verified variant 的 header）
+- 檔案中段出現 header 或 `#` 行
+- track block 內部的 blank line
+- 連續 blank line
+- trailing blank line
+- headerless data 中的 blank line
+- 其他未被 verified native grammar 支援的結構
+
+Reader 不得以「略過所有 `#` 行與 blank line」的方式處理 native data。
+
+Header 內容不進入 Canonical。
+
+Evidence：11 份真實 PFTrack 2017 export，包含 Test 08 AutoTrack / UserTrack source set（v1.0.1 CI-1）。
+
 ---
 
 ## 3. Forbidden Flat-row Grammar
@@ -222,6 +279,16 @@ AutoTrack / UserTrack 必須先各自驗證：
 - finite coordinates
 
 兩份都 PASS 才可進行 Source-set Aggregation。
+
+### Member Track Count（v1.0.2 CI-11）
+
+每一個明確指定的成員檔（AutoTrack、UserTrack）都必須至少解析出 1 條 Track。
+
+任一成員為 0 條 Track（例如空檔案，或只有 header 的 export）時，必須停止 conversion 並回報描述性錯誤。不得忽略該成員、只使用另一份檔案轉換。
+
+原因：0-track 成員可能代表錯檔、空 export、parser 問題或 export 失敗，不應 silent success。
+
+此錯誤為描述性 `ValueError`，不是 formal error code。
 
 Source-set Aggregation 必須將每條 Track 保留為獨立 Track。
 
