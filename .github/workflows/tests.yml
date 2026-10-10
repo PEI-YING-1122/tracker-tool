@@ -35,7 +35,6 @@ jobs:
         run: uv run pytest -q tests/gui --ignore=tests/gui/test_gui_conversion.py
       - name: C conversion tests all
         continue-on-error: true
-        if: false
         run: uv run pytest -q tests/gui/test_gui_conversion.py
       - name: SKIP D conversion selection-only
         continue-on-error: true
@@ -71,7 +70,6 @@ jobs:
         run: uv run python ci_probe/window_probe.py
       - name: L full suite
         continue-on-error: true
-        if: false
         run: uv run pytest -q
       - name: M micro probes (one process each)
         continue-on-error: true
