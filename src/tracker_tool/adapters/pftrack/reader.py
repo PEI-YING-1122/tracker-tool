@@ -190,10 +190,23 @@ def read_pftrack_source_set(
         source_role="AUTOTRACK",
     )
 
+    # Each explicitly specified member must yield at least one track
+    # (v1.0.2 CI-11). An empty member may be a wrong file or a failed
+    # export, so it is never silently ignored.
+    if not autotrack_tracks:
+        raise ValueError(
+            "PFTrack source set AutoTrack file contains no tracks"
+        )
+
     usertrack_tracks = read_pftrack_tracks(
         usertrack_text,
         source_role="USERTRACK",
     )
+
+    if not usertrack_tracks:
+        raise ValueError(
+            "PFTrack source set UserTrack file contains no tracks"
+        )
 
     autotrack_names = {
         track.track_name

@@ -280,6 +280,16 @@ AutoTrack / UserTrack 必須先各自驗證：
 
 兩份都 PASS 才可進行 Source-set Aggregation。
 
+### Member Track Count（v1.0.2 CI-11）
+
+每一個明確指定的成員檔（AutoTrack、UserTrack）都必須至少解析出 1 條 Track。
+
+任一成員為 0 條 Track（例如空檔案，或只有 header 的 export）時，必須停止 conversion 並回報描述性錯誤。不得忽略該成員、只使用另一份檔案轉換。
+
+原因：0-track 成員可能代表錯檔、空 export、parser 問題或 export 失敗，不應 silent success。
+
+此錯誤為描述性 `ValueError`，不是 formal error code。
+
 Source-set Aggregation 必須將每條 Track 保留為獨立 Track。
 
 不得將不同 native Track 的 observations 組合至同一 Canonical Track。
