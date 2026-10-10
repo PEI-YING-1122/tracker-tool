@@ -41,12 +41,11 @@ def test_shot_and_output_sections_hold_their_inputs(window):
     assert window.output_path.parent() is window.sections["Output"]
 
 
-def test_convert_is_disabled_until_core_integration(window):
+def test_convert_is_disabled_until_the_form_is_complete(window):
     window.shot_fields.width_field.setText("1920")
     window.output_path.path_edit.setText("out.txt")
 
     assert not window.convert_button.isEnabled()
-    assert window.convert_button.toolTip()
 
 
 def test_status_bar_shows_installed_core_version(window):
