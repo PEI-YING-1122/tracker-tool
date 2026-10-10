@@ -132,7 +132,7 @@ PR #8（合併 main）維持 Draft。
 
 交付包已完成，授權義務的處理見 `packaging/delivery/LICENSE_SUPPLEMENT.md`。
 
-**保存位置：** `E:_projectAI_Tracking_workTrackerTool_Releases1.1.0`（本機，不在 repository 中）。
+**保存位置：** `E:\_project\AI_Tracking_work\TrackerTool_Releases\v1.1.0\`（本機，不在 repository 中）。
 - 186 個檔案，全部符合 `DELIVERY_MANIFEST.txt`；
 - `LGPL_SOURCES/SHA256SUMS.txt` 校驗通過，Qt 原始碼符合官方 md5；
 - `TrackerTool/` 與 v1.1.0 tag build 逐檔相同；
