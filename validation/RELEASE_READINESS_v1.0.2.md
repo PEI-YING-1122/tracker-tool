@@ -1,12 +1,14 @@
 # Tracker Tool Core v1.0.2 — Release Readiness Report
 
 ```text
-Candidate     : release/1.0.x HEAD（f14253d 之後只有文件 commit）
+Released      : v1.0.2（annotated tag）→ 998ba70eb3e0256229c73bcd9fe7191c5f58d7a1
+GitHub Release: https://github.com/PEI-YING-1122/tracker-tool/releases/tag/v1.0.2
+                published 2026-10-10T07:41:18Z；not draft、not prerelease；latest
 Base          : v1.0.1（tag → ec17fb4，未變更）
 Package       : tracker-tool 1.0.2
-Report date   : 2026-10-10
-Status        : 技術驗收完成，等待 project owner 批准 tag 與 GitHub Release
-Not done      : v1.0.2 tag、GitHub Release、合併至 main（皆須 owner 明確批准）
+Report date   : 2026-10-10（本報告於發布前撰寫；發布狀態於發布後補記）
+Status        : RELEASED（owner 於 2026-10-10 批准）
+Not done      : 合併至 main（PR #8，尚未批准）
 ```
 
 ---
