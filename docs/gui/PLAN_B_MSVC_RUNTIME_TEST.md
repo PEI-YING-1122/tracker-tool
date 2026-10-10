@@ -49,8 +49,26 @@
 | 3 | A1–A4 真實資料 | **PASS** | 以 UI Automation 操作**打包後的** `TrackerTool.exe`，4 / 4 與 Artist 已驗收檔案 byte-identical。同一腳本跑 v1.1.0 bundle 也是 4 / 4 |
 | 4 | Error Contract | **PASS** | 20 個情境與 v1.1.0 逐字相同 |
 | 5 | 已安裝合適 Redistributable 的 Windows | **PASS** | 建置機（Windows 11，Redistributable 14.51.36247.0）：smoke test PASS；實際載入的 `VCRUNTIME140*.dll`、`MSVCP140*.dll` 全部來自 `C:\WINDOWS\SYSTEM32`（14.51.36247.0），沒有用到 PATH 或其他位置的副本 |
-| 6 | 乾淨 Windows、較舊 Runtime 環境 | **BLOCKED** | 沒有可用環境：這台機器沒有 Windows Sandbox 或 VM 工具。依指示不以現有電腦代替 |
-| 7 | 1–2 位 Tracking Artist 實際工作站 smoke test | **BLOCKED** | 需要安排 Artist。測試包與檢查步驟見 §5 |
+| 6 | 乾淨 Windows、較舊 Runtime 環境 | **BLOCKED** | 目前沒有可用環境。依指示不以現有電腦代替。評估與準備見 §3a |
+| 7 | 1–2 位 Tracking Artist 實際工作站 smoke test | **BLOCKED** | 需要安排 Artist。說明與回報表見 §5 |
+
+### 3a. 第 6 項：隔離環境評估（2026-10-10）
+
+- **建置機：** Windows 11 Pro for Workstations 26200；CPU 支援虛擬化且已在韌體啟用。
+- **Windows Sandbox：** 可安裝，但目前**停用**（`Containers-DisposableClientVM: Disabled`）；Hyper-V 也停用。
+- **啟用條件：**
+  - 需要系統管理員權限並重新開機；
+  - 會啟用 hypervisor，可能影響這台工作站上的其他軟體。
+  - 這屬於系統設定變更，**未自行啟用**，需要 owner 決定。
+- **已準備的測試**（本機測試資料夾中的 `sandbox/`）：Sandbox 設定檔與登入後自動執行的腳本。
+  - 測試包以唯讀方式掛載。
+  - 依序測試三種狀態：
+    - P1：未安裝 Redistributable；
+    - P2：Visual Studio 2019 Redistributable（14.29，低於需求）；
+    - P3：最新版。
+  - 每個階段先記錄 runtime 狀態（System32 / Windows 目錄中的檔案、登錄、已安裝程式、PATH 中的副本），再記錄實際載入的 DLL 與結束代碼；出現錯誤視窗時截圖。
+  - 若 Sandbox 內原本就有 runtime，P1 的紀錄會如實顯示，**不會被當作乾淨環境**。
+  - 安裝程式只接受有效的 Microsoft 簽章。
 
 ### 第 5 項的風險觀察
 
@@ -74,17 +92,11 @@ Windows 的 DLL 搜尋順序是 `System32` 在 Windows 目錄與 PATH 之前，�
 
 ## 5. Artist 實際工作站 smoke test（待安排）
 
-測試包：本機測試輸出資料夾中的 `TrackerTool\`（整個資料夾複製到工作站）。
+給 Artist 的說明與回報表：`docs/gui/PLAN_B_ARTIST_SMOKE_TEST.md`。它與測試包放在一起，交付給 Artist。
 
-1. 依 `VC_REDIST_INSTALL.md` 檢查 Redistributable 版本，記錄版本號；必要時安裝。
-2. 執行 `TrackerTool.exe`：
-   - 確認視窗正常開啟；
-   - 確認狀態列顯示 `tracker-tool 1.1.0`。
-3. 用一顆已知的 shot 轉換一次，在目標軟體中確認 track 數量、位置與 frame。
-4. 回報：
-   - 工作站 Windows 版本與 Redistributable 版本；
-   - 結果（PASS / FAIL）；
-   - 若失敗，附錯誤畫面與 `Copy diagnostics` 的內容。
+重點：
+- 只記錄現有的 Redistributable 版本，**不在工作站上安裝或解除安裝**任何 runtime；版本不足時先回報。
+- 用一顆已用 v1.1.0 轉換過的 shot 重新轉換，再用 `fc /b` 比對兩個輸出檔是否完全相同。
 
 ---
 
