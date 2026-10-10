@@ -4,7 +4,7 @@
 Status        : APPROVED IN PRINCIPLE (2026-10-09), with the decisions recorded in §1
 Core baseline : v1.0.1 tag → ec17fb4 (released 2026-10-10), merged into gui/develop (59a6540);
                 f72e44e cherry-picked (8091f75)
-Phase         : P1 Core integration boundary (G2 → G1) on gui/develop; P2 skeleton done.
+Phase         : P1 done (G2, G1, GUI wired to tracker_tool.app). Next: P5 polish, P6 artist smoke, CI-11 before any GUI release.
 Companion     : docs/gui/CORE_ISSUES_FROM_GUI_REVIEW.md
 ```
 
@@ -349,3 +349,30 @@ pytest-qt with `QT_QPA_PLATFORM=offscreen`:
 3. CI-1 grammar details (header variants, blank-line strictness) — Core Issues §1.
 4. Whether CI-5 and CI-7 join v1.0.1.
 5. CI-11 definition (required before P4).
+
+---
+
+## 15. P1 Status (2026-10-10)
+
+| Commit | Content |
+|---|---|
+| `b08cded` | File-level contract regression net (`tests/test_app.py`). It passed unchanged against `cli.main` before the move. |
+| `b87226e` | **G2** `tracker_tool/contract.py`: formal codes, software IDs, roles, `formal_error_code()`. 27 literals replaced, values identical. |
+| `b9cfd3c` | **G1** `tracker_tool/app.py`: `convert_file`, `convert_pftrack_source_set_files`, moved verbatim from `cli.main`. CLI delegates to it. |
+| `dad7871` | GUI wired: Source / Target / PFTrack role or source set / Convert → `tracker_tool.app`; result and error presentation. |
+
+### Verification
+
+- **Suites:** full suite 439 passed, 2 skipped (offscreen). GUI 87 passed on the native Windows platform. GUI suite 10 runs in a row, all passing.
+- **Unchanged Core tests:** `tests/test_cli.py` is unmodified.
+- **Byte parity:** CLI, `app`, and GUI produce byte-identical output for all 10 released goldens.
+- **Error Contract:** the formal Error Contract scenarios match v1.0.1 exactly.
+- **Import boundary:** the GUI imports only `tracker_tool.app`, `.config`, `.contract`, and contains no file I/O or conversion logic (architecture tests and grep).
+- **Real data:** driving the real window on the native platform with the real Test 08 / Test 03 inputs reproduces the Artist-validated A1–A4 files byte for byte.
+
+### Open before a GUI release
+
+- **CI-11 (#3):** decided, not implemented. A source-set member with 0 tracks is still accepted by Core. The GUI shows the CLI behaviour and does not pre-check it. D10 requires the Core change before P4 ships.
+- **UI language:** English, as in the skeleton. Localisation is a product decision.
+- **Formal-code input highlighting (§7):** not implemented yet (P5).
+- **P6:** artist smoke test of the GUI in production.
