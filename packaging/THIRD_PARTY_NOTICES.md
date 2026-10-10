@@ -33,7 +33,6 @@ Verified       : 2026-10-10 by inspecting an actual bundle (PE version resources
 | liblzma (XZ Utils) | version not identified | `_lzma.pyd` | 0BSD (current XZ Utils) | `xz-COPYING.txt` | https://tukaani.org/xz/ |
 | libmpdec | 2.5.1 (`decimal.__libmpdec_version__`) | `_decimal.pyd` | BSD-2-Clause | `CPython-3.11-incorporated-software.rst` (section "libmpdec") | https://www.bytereef.org/mpdecimal/ |
 | OpenSSL | 3.5.5 (copy shipped with the Python build; checked by the build script) | `libssl-3-x64.dll`, `libcrypto-3-x64.dll` | Apache-2.0 | `Apache-2.0.txt` | https://www.openssl.org/source/ |
-| Microsoft Visual C++ runtime | 14.44.35211.0 | `VCRUNTIME140*.dll`, `MSVCP140*.dll` (in `_internal/`, `PySide6/`, `shiboken6/`) | Microsoft Visual C++ Redistributable terms | not applicable | https://learn.microsoft.com/cpp/windows/latest-supported-vc-redist |
 | PyInstaller bootloader | 6.22.3 | embedded in `TrackerTool.exe` | GPL-2.0-or-later **with the PyInstaller Bootloader Exception** (allows distribution of the bundled program under any terms) | `PyInstaller-COPYING.txt` | https://github.com/pyinstaller/pyinstaller tag `v6.22.3` |
 
 Tracker Tool itself uses only the Qt modules **QtCore, QtGui and QtWidgets**. Qt6Network, Qt6Svg and the network / SVG related plugins are included automatically by the PyInstaller PySide6 hooks.
@@ -127,7 +126,7 @@ These have **not** been confirmed. They should be reviewed before any distributi
 2. **Full copyright statements of the third-party components inside Qt (§2).** Only the component list and license names are included; the per-component copyright texts are not reproduced. Some components are confirmed in the binaries (§2, "What the binaries show"); the rest are neither confirmed nor excluded.
 3. **Mesa `opengl32sw.dll`.** Mesa 11.2.2 and LLVM are confirmed in the binary, and the LLVM license is included. The LLVM version and any other statically linked components are not known; the exact build configuration used by the PySide6 project has not been obtained.
 4. **libtiff / libwebp versions** inside the Qt Image Formats plugins, and the **liblzma** version inside `_lzma.pyd`, are not identified. The license texts included are the current upstream ones.
-5. **Microsoft Visual C++ runtime:** the applicable redistribution terms have not been reviewed.
+5. **Microsoft Visual C++ runtime: not shipped.** The `VCRUNTIME140*.dll` / `MSVCP140*.dll` files that Python, PySide6 and shiboken6 provide are removed from the bundle. Each workstation needs the Microsoft Visual C++ Redistributable (x64) 14.44 or later, installed from Microsoft (see VC_REDIST_INSTALL.md next to TrackerTool.exe).
 6. **Unused Qt parts are shipped.** The PyInstaller PySide6 hooks add Qt Network, Qt SVG, TLS / network-information plugins and the image-format plugins although Tracker Tool does not use them. Excluding them would reduce the notices, but it changes the bundle that passed the Artist trial and has not been done.
 7. **Tracker Tool's own license:** not chosen (see `USE_AND_LICENSE.md`).
 

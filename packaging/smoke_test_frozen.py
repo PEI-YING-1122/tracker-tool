@@ -38,6 +38,7 @@ def main(argv=None) -> int:
         "THIRD_PARTY_NOTICES.md",
         "USER_GUIDE.md",
         "USE_AND_LICENSE.md",
+        "VC_REDIST_INSTALL.md",
         "THIRD_PARTY_LICENSES/LGPL-3.0.txt",
         "THIRD_PARTY_LICENSES/GPL-3.0.txt",
     ]
