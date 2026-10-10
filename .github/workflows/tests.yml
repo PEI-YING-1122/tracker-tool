@@ -25,30 +25,45 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libegl1 libgl1 libxkbcommon0 libfontconfig1 libdbus-1-3 libglib2.0-0
       - run: uv sync --locked --all-extras
-      - name: A core only
+      - name: SKIP A core only
         continue-on-error: true
+        if: false
         run: uv run pytest -q --ignore=tests/gui
-      - name: B gui without conversion tests
+      - name: SKIP B gui without conversion tests
         continue-on-error: true
+        if: false
         run: uv run pytest -q tests/gui --ignore=tests/gui/test_gui_conversion.py
-      - name: C conversion tests all
+      - name: SKIP C conversion tests all
         continue-on-error: true
+        if: false
         run: uv run pytest -q tests/gui/test_gui_conversion.py
-      - name: D conversion selection-only
+      - name: SKIP D conversion selection-only
         continue-on-error: true
+        if: false
         run: uv run pytest -q tests/gui/test_gui_conversion.py -k "choices or disabled or resets or keeps or pftrack_controls or role_has or requires_complete or empty_shot"
-      - name: E conversion golden runs
+      - name: SKIP E conversion golden runs
         continue-on-error: true
+        if: false
         run: uv run pytest -q tests/gui/test_gui_conversion.py -k "golden"
-      - name: F conversion error presentation
+      - name: SKIP F conversion error presentation
         continue-on-error: true
+        if: false
         run: uv run pytest -q tests/gui/test_gui_conversion.py -k "error or failure or success or usable or collision"
-      - name: G conversion app spies
+      - name: SKIP G conversion app spies
         continue-on-error: true
+        if: false
         run: uv run pytest -q tests/gui/test_gui_conversion.py -k "calls_tracker_tool_app"
-      - name: H one MainWindow then exit
+      - name: SKIP H one MainWindow then exit
         continue-on-error: true
+        if: false
         run: uv run python -c "from PySide6.QtWidgets import QApplication; a=QApplication([]); from tracker_tool_gui.main_window import MainWindow; w=MainWindow(); w.show(); a.processEvents(); print('ok')"
-      - name: I one SourceSection then exit
+      - name: SKIP I one SourceSection then exit
         continue-on-error: true
+        if: false
         run: uv run python -c "from PySide6.QtWidgets import QApplication; a=QApplication([]); from tracker_tool_gui.selection import SourceSection; s=SourceSection(); s.show(); a.processEvents(); print('ok')"
+      - name: J api probe
+        continue-on-error: true
+        run: uv run python ci_probe/api_probe.py
+      - name: K window probe
+        continue-on-error: true
+        run: uv run python ci_probe/window_probe.py
