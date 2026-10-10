@@ -1,13 +1,12 @@
 import argparse
-from pathlib import Path
 
+from tracker_tool.app import (
+    convert_file,
+    convert_pftrack_source_set_files,
+)
 from tracker_tool.config import ShotConfig
 from tracker_tool.contract import (
     SOFTWARE_PFTRACK_2017,
-)
-from tracker_tool.conversion import (
-    convert_pftrack_source_set,
-    convert_tracks,
 )
 
 
@@ -116,18 +115,6 @@ def main(argv=None) -> int:
     args = parser.parse_args(argv)
 
     if args.command == "convert":
-        input_path = Path(args.input)
-        output_path = Path(args.output)
-
-        if input_path.resolve() == output_path.resolve():
-            raise ValueError(
-                "Input and output paths must be different"
-            )
-
-        native_text = input_path.read_text(
-            encoding="utf-8",
-        )
-
         shot_config = ShotConfig(
             image_width=args.width,
             image_height=args.height,
@@ -137,47 +124,16 @@ def main(argv=None) -> int:
             target_software=args.target,
         )
 
-        output_text = convert_tracks(
-            native_text,
+        convert_file(
+            args.input,
+            args.output,
             shot_config,
             pftrack_source_role=args.pftrack_source_role,
-        )
-
-        output_path.write_text(
-            output_text,
-            encoding="utf-8",
         )
 
         return 0
 
     if args.command == "convert-pftrack-source-set":
-        autotrack_path = Path(
-            args.autotrack_input
-        )
-        usertrack_path = Path(
-            args.usertrack_input
-        )
-        output_path = Path(
-            args.output
-        )
-
-        if (
-            output_path.resolve()
-            == autotrack_path.resolve()
-            or output_path.resolve()
-            == usertrack_path.resolve()
-        ):
-            raise ValueError(
-                "Input and output paths must be different"
-            )
-
-        autotrack_text = autotrack_path.read_text(
-            encoding="utf-8",
-        )
-        usertrack_text = usertrack_path.read_text(
-            encoding="utf-8",
-        )
-
         shot_config = ShotConfig(
             image_width=args.width,
             image_height=args.height,
@@ -187,15 +143,11 @@ def main(argv=None) -> int:
             target_software=args.target,
         )
 
-        output_text = convert_pftrack_source_set(
-            autotrack_text,
-            usertrack_text,
+        convert_pftrack_source_set_files(
+            args.autotrack_input,
+            args.usertrack_input,
+            args.output,
             shot_config,
-        )
-
-        output_path.write_text(
-            output_text,
-            encoding="utf-8",
         )
 
         return 0
