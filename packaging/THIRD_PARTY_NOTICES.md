@@ -81,8 +81,10 @@ Qt Image Formats (plugins `qtiff`, `qwebp`, `qicns`, `qtga`, `qwbmp`) is a separ
 
 | Qt module | Component | License | Full text in `THIRD_PARTY_LICENSES/` |
 |---|---|---|---|
-| Image Formats | libtiff (in `qtiff.dll`) | libtiff License (BSD-like) | `libtiff-LICENSE.md` |
-| Image Formats | libwebp (in `qwebp.dll`) | BSD-3-Clause | `libwebp-COPYING.txt` |
+| Image Formats | libtiff 4.7.2 (in `qtiff.dll`) | libtiff License (BSD-like) | `libtiff-LICENSE.md` |
+| Image Formats | libwebp 1.6.0 (in `qwebp.dll`) | BSD-3-Clause | `libwebp-COPYING.txt` |
+
+The name, version, copyright and full license text of every component above, taken from the `qt_attribution.json` files in the Qt 6.11.2 source archives, are in `Qt-6.11.2-third-party-attributions.txt`. Only components for other platforms and for Qt modules that are not shipped are left out.
 
 ### What the binaries show (2026-10-10 bundle inspection)
 
@@ -97,7 +99,7 @@ Qt Image Formats (plugins `qtiff`, `qwebp`, `qicns`, `qtga`, `qwbmp`) is a separ
 
 String matching cannot prove absence, so the other §2 entries (for example zlib and libpng inside Qt) are neither confirmed nor excluded.
 
-The complete copyright statements of the §2 components are published on the Qt page above (one sub-page per component). They are **not** reproduced in this bundle (see Unconfirmed items).
+The complete copyright statements of the §2 components are in `Qt-6.11.2-third-party-attributions.txt`.
 
 ---
 
@@ -124,11 +126,13 @@ The Tracker Tool Core has no third-party runtime dependencies.
 These have **not** been confirmed. They should be reviewed before any distribution beyond internal use.
 
 1. **Whether internal delivery is "conveying."** The Free Software Foundation's FAQ treats copies made within one organisation as not distributed to "others". This depends on how the company and its staff are organised, and has not been confirmed for this case. The notices are shipped regardless.
-2. **Full copyright statements of the third-party components inside Qt (§2).** Only the component list and license names are included; the per-component copyright texts are not reproduced. Some components are confirmed in the binaries (§2, "What the binaries show"); the rest are neither confirmed nor excluded.
+2. **Which §2 components the Windows binaries contain.** Some are confirmed (§2, "What the binaries show"). The attributions file covers all of them, so this affects only how long the list is.
 3. **Mesa `opengl32sw.dll`.** Mesa 11.2.2 and LLVM are confirmed in the binary, and the LLVM license is included. The LLVM version and any other statically linked components are not known; the exact build configuration used by the PySide6 project has not been obtained.
-4. **libtiff / libwebp versions** inside the Qt Image Formats plugins, and the **liblzma** version inside `_lzma.pyd`, are not identified. The license texts included are the current upstream ones.
-5. **Microsoft Visual C++ runtime:** the applicable redistribution terms have not been reviewed.
-6. **Unused Qt parts are shipped.** The PyInstaller PySide6 hooks add Qt Network, Qt SVG, TLS / network-information plugins and the image-format plugins although Tracker Tool does not use them. Excluding them would reduce the notices, but it changes the bundle that passed the Artist trial and has not been done.
+4. **liblzma version** inside `_lzma.pyd` is not identified. Its license (0BSD, or public domain for older XZ Utils) adds no obligations.
+5. **Microsoft Visual C++ runtime:** Microsoft allows app-local redistribution under the "Distributable Code" terms of the Visual Studio license. The files come from the PySide6 and Python distributions, and whether those terms apply to this project has not been confirmed by the owner or a lawyer.
+6. **Unused Qt parts are shipped.** The PyInstaller PySide6 hooks add Qt Network, Qt SVG, TLS / network-information plugins and the image-format plugins although Tracker Tool does not use them. They are covered by these notices and by the LGPL sources.
 7. **Tracker Tool's own license:** not chosen (see `USE_AND_LICENSE.md`).
+
+LGPL-3.0 source code: the internal delivery package includes the official Qt / PySide6 source archives and the Tracker Tool source in `LGPL_SOURCES/` (see `docs/gui/GUI_PACKAGING.md`, "Internal delivery package").
 
 Resolved on 2026-10-10: earlier builds could pick up a different OpenSSL (3.1.4, from Git for Windows on `PATH`). The build script now puts the Python build's own `DLLs` folder first and fails if the bundled OpenSSL / libffi DLLs differ from it.

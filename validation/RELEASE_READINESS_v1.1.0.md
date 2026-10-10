@@ -1,12 +1,14 @@
 # Tracker Tool v1.1.0（GUI）— Release Readiness Report
 
 ```text
-Candidate     : release/1.1.x（由 gui/develop 建立）
+Released      : v1.1.0（annotated tag）→ 437e7e60fdd354120e73360bd39f78c8012cda8b
+GitHub Release: https://github.com/PEI-YING-1122/tracker-tool/releases/tag/v1.1.0
+                published 2026-10-10T08:15:06Z；not draft、not prerelease；latest；無附件
 Base          : v1.0.2（tag → 998ba70，未變更）
 Package       : tracker-tool 1.1.0
-Report date   : 2026-10-10
-Status        : RELEASE CANDIDATE — 尚未建立 tag 或 GitHub Release
-Not done      : tag v1.1.0、GitHub Release、合併至 main（PR #8 仍為 Draft）
+Report date   : 2026-10-10（本報告於發布前撰寫；發布狀態於發布後補記）
+Status        : RELEASED（owner 於 2026-10-10 批准）
+Not done      : 合併至 main（PR #8 仍為 Draft）；內部正式交付（見 §6）
 ```
 
 ---
@@ -84,12 +86,50 @@ P6 之後 GUI 程式只多了 CI-11 錯誤顯示的測試，介面沒有變更�
 | 3 | Windows bundle 建置與 smoke test | **完成** |
 | 4 | 第三方聲明依實際 bundle 更新 | **完成**；未確認項目見 §3 |
 | 5 | GitHub Actions（Windows / Linux / package） | **完成**（run 38036003943） |
-| 6 | Owner 批准 tag `v1.1.0` 與 GitHub Release | **待決定** |
-| 7 | 以 RC 重新建置內部交付 bundle | 批准後進行 |
+| 6 | Owner 批准 tag `v1.1.0` 與 GitHub Release | **完成**（2026-10-10 批准並發布） |
+| 7 | 以正式 tag 重新建置 Windows bundle | **完成**（§6） |
 
-批准後的程序：
+發布程序（已完成）：
 1. 在 `release/1.1.x` 建立 annotated tag `v1.1.0`。
 2. 以 `validation/RELEASE_NOTES_v1.1.0.md` 建立 GitHub Release，**不附 GUI 執行檔**。
 3. 由該 tag 建置交付 bundle，內部交付。
 
 PR #8（合併 main）維持 Draft。
+
+---
+
+## 6. 內部正式交付（發布後補記）
+
+### Windows bundle（由正式 tag 建置）
+
+從 GitHub 重新 clone `v1.1.0`，以 `uv sync --locked` 建置。
+
+| 檢查 | 結果 |
+|---|---|
+| `BUILD_INFO.txt` | commit `437e7e6…`、uncommitted changes: no、tracker-tool 1.1.0、PySide6 6.11.2 |
+| Smoke test | PASS |
+| OpenSSL DLL 雜湊 | `libcrypto-3-x64.dll`、`libssl-3-x64.dll` 與 Python build 的版本逐 byte 相同（3.5.5） |
+| Bundle 稽核 | 與 RC 稽核結果相同；沒有 msvcrt / mingw 連結的 DLL |
+| `TrackerTool.exe` SHA-256 | `6fa6ee8606c4528916cd9d3e0e7e36b889fe369e3a9d9d9575c6884adf717ce7` |
+
+### 交付包（`packaging/assemble_delivery.py`）
+
+- `TrackerTool/`：上述 bundle，未修改（與 tag bundle 逐檔雜湊相同）。
+- `LICENSE_SUPPLEMENT/`：
+  - 授權補充說明；
+  - Qt 6.11.2 第三方元件完整聲明（46 個元件）。
+- `LGPL_SOURCES/`：
+  - Qt 6.11.2 官方原始碼：qtbase、qtsvg、qtimageformats、qttranslations，md5 與 Qt 公布值相符；
+  - PySide6 6.11.2 原始碼；
+  - Tracker Tool v1.1.0 原始碼。
+- `DELIVERY_MANIFEST.txt`：全部檔案的 SHA-256。
+
+驗證：
+- 交付包內的程式 smoke test PASS。
+- 以 `LGPL_SOURCES/tracker-tool-v1.1.0-src.zip` 重新建置成功，smoke test PASS。這證明 PySide6 的 Python 部分（打包在 exe 內）可以替換。
+
+### 狀態
+
+交付包已完成，授權義務的處理見 `packaging/delivery/LICENSE_SUPPLEMENT.md`。
+
+唯一尚待確認的是 **Microsoft Visual C++ runtime 的再散布條款是否適用**。這屬於法律判斷，需要 owner 確認。確認前，**不標記為「內部正式交付完成」**。
