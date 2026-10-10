@@ -503,6 +503,7 @@ def test_failure_preserves_existing_output_file(qtbot, window, tmp_path, three_d
     output = tmp_path / "out.txt"
     existing = b"existing output\r\n"
     output.write_bytes(existing)
+    window._confirm_overwrite = lambda parent, path: True
     _fill(window, source="3DE_R5", target="PFTRACK_2017", input_path=three_de_input, output=output, width="0")
 
     assert _convert(qtbot, window) == "FAIL — INVALID_SHOT_METADATA"

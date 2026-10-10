@@ -39,6 +39,17 @@ FORMAL_ERROR_EXPLANATIONS = {
     UNSUPPORTED_TARGET_SOFTWARE: "The target software is not supported.",
 }
 
+# Form sections to highlight for each formal error code (presentation only).
+FORMAL_ERROR_SECTIONS = {
+    MISSING_REQUIRED_SHOT_METADATA: ("Shot",),
+    INVALID_SHOT_METADATA: ("Shot",),
+    OBSERVATION_OUTSIDE_SHOT_RANGE: ("Shot",),
+    CROSS_SOURCE_TRACK_NAME_COLLISION: ("Source",),
+    SAME_SOURCE_CONVERSION_NOT_ALLOWED: ("Source", "Target"),
+    UNSUPPORTED_SOURCE_SOFTWARE: ("Source",),
+    UNSUPPORTED_TARGET_SOFTWARE: ("Target",),
+}
+
 NON_CONTRACT_NOTE = "This message is not part of the Error Contract."
 
 
@@ -46,6 +57,7 @@ class FailurePresentation(NamedTuple):
     heading: str
     message: str
     details: str
+    sections: tuple = ()
 
 
 def describe_failure(exc: BaseException) -> FailurePresentation:
@@ -56,6 +68,7 @@ def describe_failure(exc: BaseException) -> FailurePresentation:
             heading=code,
             message=FORMAL_ERROR_EXPLANATIONS[code],
             details="",
+            sections=FORMAL_ERROR_SECTIONS[code],
         )
 
     if isinstance(exc, ValueError):

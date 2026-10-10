@@ -1,8 +1,10 @@
 from importlib import metadata
+from pathlib import Path
 
 from PySide6.QtWidgets import (
     QGroupBox,
     QMainWindow,
+    QMessageBox,
     QPushButton,
     QVBoxLayout,
     QWidget,
@@ -31,6 +33,21 @@ SECTION_TITLES = (
 
 READY_MESSAGE = "Choose source, target, shot metadata and output, then Convert."
 BUSY_STATUS = "Converting…"
+CANCELLED_MESSAGE = "Conversion cancelled. The existing output file was not changed."
+
+# Highlight for form sections related to a formal error (presentation only).
+ATTENTION_STYLE = "QGroupBox { color: #c0392b; font-weight: bold; }"
+
+
+def _ask_overwrite(parent, output_path: str) -> bool:
+    answer = QMessageBox.question(
+        parent,
+        "Overwrite output file?",
+        f"The output file already exists:\n\n{output_path}\n\nOverwrite it?",
+        QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+        QMessageBox.StandardButton.No,
+    )
+    return answer == QMessageBox.StandardButton.Yes
 
 
 def installed_core_version() -> str:
@@ -41,10 +58,20 @@ def installed_core_version() -> str:
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, parent=None, runner=None, preferences=None):
+    def __init__(
+        self,
+        parent=None,
+        runner=None,
+        preferences=None,
+        confirm_overwrite=None,
+        open_folder=None,
+    ):
         super().__init__(parent)
 
         self.setWindowTitle(WINDOW_TITLE)
+
+        self._confirm_overwrite = confirm_overwrite or _ask_overwrite
+        self._dialog_confirmed_output = ""
 
         self.preferences = preferences or Preferences()
         self.runner = runner or TaskRunner(self)
@@ -83,7 +110,10 @@ class MainWindow(QMainWindow):
         )
         self.sections["Output"].layout().addWidget(self.output_path)
 
-        self.result_panel = ResultPanel(self.sections["Result"])
+        self.result_panel = ResultPanel(
+            self.sections["Result"],
+            open_folder=open_folder,
+        )
         self.sections["Result"].layout().addWidget(self.result_panel)
         self.result_panel.show_idle(READY_MESSAGE)
 
@@ -92,6 +122,14 @@ class MainWindow(QMainWindow):
 
         self.setCentralWidget(central)
 
+        for edited in (
+            self.source.changed,
+            self.target.changed,
+            self.shot_fields.changed,
+            self.output_path.changed,
+        ):
+            edited.connect(self.clear_attention)
+
         self.source.changed.connect(self._on_source_changed)
         self.source.input_chosen.connect(
             lambda path: self.preferences.remember_file("input", path)
@@ -99,9 +137,7 @@ class MainWindow(QMainWindow):
         self.target.changed.connect(self._update_convert_enabled)
         self.shot_fields.changed.connect(self._update_convert_enabled)
         self.output_path.changed.connect(self._update_convert_enabled)
-        self.output_path.chosen.connect(
-            lambda path: self.preferences.remember_file("output", path)
-        )
+        self.output_path.chosen.connect(self._on_output_chosen)
         self.convert_button.clicked.connect(self.start_conversion)
 
         self._request_context = []
@@ -120,6 +156,28 @@ class MainWindow(QMainWindow):
         self.preferences.save_window_geometry(self.saveGeometry())
         self.preferences.sync()
         super().closeEvent(event)
+
+    def _on_output_chosen(self, path: str) -> None:
+        # The Save dialog has already asked about overwriting this path.
+        self._dialog_confirmed_output = path
+        self.preferences.remember_file("output", path)
+
+    def attention_sections(self) -> list[str]:
+        return [
+            title
+            for title, section in self.sections.items()
+            if section.styleSheet() == ATTENTION_STYLE
+        ]
+
+    def clear_attention(self) -> None:
+        for section in self.sections.values():
+            section.setStyleSheet("")
+
+    def _set_attention(self, titles) -> None:
+        self.clear_attention()
+
+        for title in titles:
+            self.sections[title].setStyleSheet(ATTENTION_STYLE)
 
     def _input_sections(self):
         return [
@@ -213,8 +271,20 @@ class MainWindow(QMainWindow):
 
         return job, context, output
 
+    def _output_overwrite_allowed(self, output: str) -> bool:
+        if not Path(output).exists() or output == self._dialog_confirmed_output:
+            return True
+
+        return self._confirm_overwrite(self, output)
+
     def start_conversion(self) -> None:
         if not self.can_convert():
+            return
+
+        self.clear_attention()
+
+        if not self._output_overwrite_allowed(self.output_path.path()):
+            self.result_panel.show_idle(CANCELLED_MESSAGE)
             return
 
         job, self._request_context, self._request_output = self._request()
@@ -228,6 +298,7 @@ class MainWindow(QMainWindow):
 
     def _on_failed(self, exc) -> None:
         failure = describe_failure(exc)
+        self._set_attention(failure.sections)
         self.result_panel.show_failure(
             failure.heading,
             failure.message,

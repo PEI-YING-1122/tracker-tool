@@ -1,7 +1,13 @@
 from typing import NamedTuple
 
-from PySide6.QtCore import QRegularExpression, Signal
-from PySide6.QtGui import QGuiApplication, QRegularExpressionValidator
+from pathlib import Path
+
+from PySide6.QtCore import QRegularExpression, QUrl, Signal
+from PySide6.QtGui import (
+    QDesktopServices,
+    QGuiApplication,
+    QRegularExpressionValidator,
+)
 from PySide6.QtWidgets import (
     QCheckBox,
     QFileDialog,
@@ -200,6 +206,10 @@ class PathField(QWidget):
         return self.path_edit.text()
 
 
+def _open_folder(folder: str) -> None:
+    QDesktopServices.openUrl(QUrl.fromLocalFile(folder))
+
+
 class ResultPanel(QWidget):
     """Presents the outcome of the last conversion.
 
@@ -207,8 +217,11 @@ class ResultPanel(QWidget):
     not its job.
     """
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, open_folder=None):
         super().__init__(parent)
+
+        self._open_folder = open_folder or _open_folder
+        self._output_folder = ""
 
         layout = QVBoxLayout(self)
 
@@ -221,12 +234,17 @@ class ResultPanel(QWidget):
         self.details.setReadOnly(True)
         self.copy_diagnostics_button = QPushButton("Copy diagnostics", self)
         self.copy_diagnostics_button.clicked.connect(self._copy_diagnostics)
+        self.open_folder_button = QPushButton("Open output folder", self)
+        self.open_folder_button.clicked.connect(
+            lambda: self._open_folder(self._output_folder)
+        )
 
         layout.addWidget(self.heading)
         layout.addWidget(self.message)
         layout.addWidget(self.note)
         layout.addWidget(self.details)
         layout.addWidget(self.copy_diagnostics_button)
+        layout.addWidget(self.open_folder_button)
 
         self._diagnostics = ""
         self.show_idle()
@@ -240,6 +258,8 @@ class ResultPanel(QWidget):
         self.details.setVisible(bool(details))
         self._diagnostics = diagnostics
         self.copy_diagnostics_button.setVisible(bool(diagnostics))
+        self._output_folder = ""
+        self.open_folder_button.setVisible(False)
 
     def diagnostics(self) -> str:
         return self._diagnostics
@@ -260,6 +280,8 @@ class ResultPanel(QWidget):
             ARTIST_IMPORT_NOTE,
             diagnostics=diagnostics,
         )
+        self._output_folder = str(Path(output_path).parent)
+        self.open_folder_button.setVisible(True)
 
     def show_failure(self, heading, message, details="", diagnostics="") -> None:
         self._show(
