@@ -44,8 +44,10 @@ def window(qtbot):
     qtbot.waitUntil(lambda: not main_window.runner.busy, timeout=5000)
 
 
-def _select(combo, value):
-    combo.select(value)
+def _select(combo, data):
+    index = combo.findData(data)
+    assert index >= 0, data
+    combo.setCurrentIndex(index)
 
 
 def _fill(
@@ -99,14 +101,20 @@ def _convert(qtbot, window):
 
 def test_software_choices_come_from_contract(window):
     for combo in (window.source.software, window.target.software):
-        assert combo.values() == [None, *SUPPORTED_SOFTWARE]
-        assert combo.count() == len(SUPPORTED_SOFTWARE) + 1
+        assert [combo.itemData(i) for i in range(combo.count())] == [
+            None,
+            *SUPPORTED_SOFTWARE,
+        ]
         assert combo.itemText(0) == PLACEHOLDER
 
         for index, software_id in enumerate(SUPPORTED_SOFTWARE, start=1):
             assert combo.itemText(index).endswith(f"({software_id})")
 
-    assert window.source.role.values() == [None, *PFTRACK_SOURCE_ROLES]
+    role = window.source.role
+    assert [role.itemData(i) for i in range(role.count())] == [
+        None,
+        *PFTRACK_SOURCE_ROLES,
+    ]
 
 
 @pytest.mark.parametrize("source", SUPPORTED_SOFTWARE)
@@ -114,12 +122,12 @@ def test_target_equal_to_source_is_disabled_with_tooltip(window, source):
     _select(window.source.software, source)
 
     for software_id in SUPPORTED_SOFTWARE:
-        index = window.target.software.index_of(software_id)
+        index = window.target.software.findData(software_id)
         enabled = window.target.item_enabled(software_id)
         tooltip = window.target.software.itemData(index, Qt.ItemDataRole.ToolTipRole)
 
         assert enabled == (software_id != source)
-        assert tooltip == (SAME_AS_SOURCE_TOOLTIP if software_id == source else "")
+        assert tooltip == (SAME_AS_SOURCE_TOOLTIP if software_id == source else None)
 
 
 def test_changing_source_to_current_target_resets_target(window):
@@ -176,7 +184,7 @@ def test_pftrack_role_has_no_default_and_is_required(window, tmp_path):
         output=tmp_path / "out.txt",
     )
 
-    assert window.source.role.value() is None
+    assert window.source.role.currentData() is None
     assert not window.convert_button.isEnabled()
 
     _select(window.source.role, "USERTRACK")

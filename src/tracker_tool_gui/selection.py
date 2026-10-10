@@ -46,40 +46,14 @@ def _labelled(identifier, labels):
     return f"{labels[identifier]} ({identifier})"
 
 
-class ChoiceBox(QComboBox):
-    """Combo box with a placeholder and a fixed list of identifiers.
+def _combo(parent, identifiers, labels):
+    combo = QComboBox(parent)
+    combo.addItem(PLACEHOLDER, None)
 
-    The identifiers are kept on the Python side instead of in Qt item data,
-    and item tooltips are always strings. Passing None through Qt item data
-    and bool through QFormLayout.setRowVisible corrupts the reference count
-    of None / True in the PySide6 6.12 Linux build (Fatal Python error at
-    interpreter exit, seen in CI), so the GUI avoids both.
-    """
+    for identifier in identifiers:
+        combo.addItem(_labelled(identifier, labels), identifier)
 
-    def __init__(self, identifiers, labels, parent=None):
-        super().__init__(parent)
-
-        self._values = [None, *identifiers]
-        self.addItem(PLACEHOLDER)
-
-        for identifier in identifiers:
-            self.addItem(_labelled(identifier, labels))
-
-        for index in range(self.count()):
-            self.setItemData(index, "", Qt.ItemDataRole.ToolTipRole)
-
-    def values(self) -> list:
-        return list(self._values)
-
-    def value(self):
-        index = self.currentIndex()
-        return self._values[index] if index >= 0 else None
-
-    def index_of(self, value) -> int:
-        return self._values.index(value)
-
-    def select(self, value) -> None:
-        self.setCurrentIndex(self.index_of(value))
+    return combo
 
 
 class SourceSection(QWidget):
@@ -93,7 +67,7 @@ class SourceSection(QWidget):
 
         layout = QFormLayout(self)
 
-        self.software = ChoiceBox(SUPPORTED_SOFTWARE, SOFTWARE_LABELS, self)
+        self.software = _combo(self, SUPPORTED_SOFTWARE, SOFTWARE_LABELS)
 
         self.single_file_mode = QRadioButton("Single file", self)
         self.source_set_mode = QRadioButton(
@@ -111,7 +85,7 @@ class SourceSection(QWidget):
         mode_layout.addWidget(self.single_file_mode)
         mode_layout.addWidget(self.source_set_mode)
 
-        self.role = ChoiceBox(PFTRACK_SOURCE_ROLES, ROLE_LABELS, self)
+        self.role = _combo(self, PFTRACK_SOURCE_ROLES, ROLE_LABELS)
 
         self.input_path = PathField(
             "Choose source file",
@@ -148,7 +122,7 @@ class SourceSection(QWidget):
         self._refresh()
 
     def software_id(self) -> str | None:
-        return self.software.value()
+        return self.software.currentData()
 
     def is_pftrack(self) -> bool:
         return self.software_id() == SOFTWARE_PFTRACK_2017
@@ -160,16 +134,10 @@ class SourceSection(QWidget):
         if not self.is_pftrack() or self.is_source_set():
             return None
 
-        return self.role.value()
+        return self.role.currentData()
 
     def _set_row_visible(self, field, visible) -> None:
-        # show() / hide() instead of QFormLayout.setRowVisible(field, bool);
-        # see ChoiceBox for the PySide6 Linux refcount issue.
-        for widget in (self._layout.labelForField(field), field):
-            if visible:
-                widget.show()
-            else:
-                widget.hide()
+        self._layout.setRowVisible(field, visible)
 
     def _refresh(self) -> None:
         pftrack = self.is_pftrack()
@@ -209,30 +177,28 @@ class TargetSection(QWidget):
         super().__init__(parent)
 
         layout = QFormLayout(self)
-        self.software = ChoiceBox(SUPPORTED_SOFTWARE, SOFTWARE_LABELS, self)
+        self.software = _combo(self, SUPPORTED_SOFTWARE, SOFTWARE_LABELS)
         layout.addRow("Software", self.software)
 
         self.software.currentIndexChanged.connect(self.changed)
 
     def software_id(self) -> str | None:
-        return self.software.value()
+        return self.software.currentData()
 
     def item_enabled(self, software_id) -> bool:
-        index = self.software.index_of(software_id)
+        index = self.software.findData(software_id)
         return self.software.model().item(index).isEnabled()
 
     def set_source(self, source_id) -> None:
         model = self.software.model()
 
-        for index, software_id in enumerate(self.software.values()):
-            if software_id is None:
-                continue
-
-            same_as_source = software_id == source_id
-            model.item(index).setEnabled(not same_as_source)
+        for index in range(1, self.software.count()):
+            same_as_source = self.software.itemData(index) == source_id
+            item = model.item(index)
+            item.setEnabled(not same_as_source)
             self.software.setItemData(
                 index,
-                SAME_AS_SOURCE_TOOLTIP if same_as_source else "",
+                SAME_AS_SOURCE_TOOLTIP if same_as_source else None,
                 Qt.ItemDataRole.ToolTipRole,
             )
 
