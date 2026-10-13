@@ -72,7 +72,7 @@
 | Mesa `opengl32sw.dll` 11.2.2 | MIT 類；內含 LLVM（Apache-2.0 WITH LLVM-exception） | 隨 PySide6 一起安裝 |
 | Python 3.11.14 runtime | PSF-2.0 | 含 zlib 1.3.1、libmpdec 2.5.1、bzip2、liblzma |
 | OpenSSL 3.5.5 | Apache-2.0 | Python build 自帶的版本，因 `_hashlib` 一併被打包。build script 會檢查來源，見下方說明 |
-| Microsoft VC++ runtime 14.44.35211.0 | Microsoft 可再散布條款 | |
+| Microsoft VC++ runtime | — | **v1.1.1 起不隨附**。工作站使用 Microsoft 官方 Visual C++ Redistributable (x64) 14.44 以上（`MSVC_RUNTIME_LICENSE_EVIDENCE.md`） |
 
 **已修正的打包缺陷（2026-10-10）：** PyInstaller 會從 `PATH` 尋找 `_hashlib.pyd` 依賴的 OpenSSL DLL。開發機上它找到的是 Git for Windows 的 OpenSSL 3.1.4（連結 `msvcrt.dll`），而不是 Python 自帶的 3.5.5。P6 試用 bundle（`fde0c16`）可能也是如此。`packaging/build_gui.py` 現在會把 Python 的 `DLLs` 目錄放在 `PATH` 最前面，並在 build 後比對雜湊，不一致時 build 失敗。
 | PyInstaller bootloader | GPL-2.0-or-later，附 bootloader 例外條款 | 例外條款允許以任何授權散布打包後的程式 |
@@ -93,7 +93,7 @@ pytest、pytest-qt、pluggy、iniconfig、packaging、pygments、colorama、typi
 | Python、OpenSSL、bzip2、xz、libmpdec、zlib | 附上授權與版權聲明 | 已隨 bundle 附上（Python LICENSE、CPython incorporated software、Apache-2.0、xz COPYING） |
 | Mesa、LLVM、libtiff、libwebp | 附上各自的授權與版權聲明 | 已隨 bundle 附上 |
 | Qt 內部其他第三方函式庫 | 附上各自的版權聲明 | **已收錄**：`Qt-6.11.2-third-party-attributions.txt`（46 個元件，取自 Qt 原始碼的 `qt_attribution.json`） |
-| Microsoft VC++ runtime | 依可再散布條款散布 | Microsoft 允許 app-local 再散布（Visual Studio 授權「Distributable Code」）。是否適用於本專案，**待 owner 確認** |
+| Microsoft VC++ runtime | 依可再散布條款散布 | v1.1.0 隨附；無法確認擁有 Visual Studio 授權，**v1.1.1 起不隨附**，改由工作站安裝 Microsoft 官方 Redistributable |
 | PyInstaller bootloader | 例外條款下通常沒有額外義務 | 待確認 |
 
 **因此目前不宣稱完全合規。**
@@ -110,7 +110,7 @@ pytest、pytest-qt、pluggy、iniconfig、packaging、pygments、colorama、typi
 | LGPL 原始碼與替換 | 交付包附原始碼（`packaging/assemble_delivery.py`），替換方式見 `packaging/delivery/LICENSE_SUPPLEMENT.md` |
 | 使用範圍與授權說明 | `packaging/delivery/USE_AND_LICENSE.md`，隨 bundle 附上 |
 | 使用說明 | `packaging/delivery/USER_GUIDE.md`，隨 bundle 附上 |
-| 未確認項目 | 列在 `THIRD_PARTY_NOTICES.md` §5 與 `LICENSE_SUPPLEMENT.md` §3。剩下 MSVC runtime 待 owner 確認，**不宣稱完全合規** |
+| 未確認項目 | 列在 `THIRD_PARTY_NOTICES.md` §5 與 `LICENSE_SUPPLEMENT.md` §3。MSVC runtime 自 v1.1.1 起不隨附。**不宣稱完全合規** |
 
 ## 5. 需要 owner 決定的事項
 
