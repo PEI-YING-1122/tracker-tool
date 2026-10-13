@@ -6,11 +6,14 @@ Tracker Tool 用來在 **3DEqualizer R5**、**PFTrack 2017**、**SynthEyes 2304*
 
 ---
 
-## 1. 安裝與啟動
+## 1. 系統需求、安裝與啟動
 
-1. 將整個 `TrackerTool` 資料夾複製到本機。路徑可以包含中文。
-2. 執行 `TrackerTool\TrackerTool.exe`。不需要安裝 Python。
-3. 視窗下方狀態列會顯示目前的 tracker-tool 版本。
+**系統需求：** Windows 10 / 11（x64），以及 **Microsoft Visual C++ Redistributable (x64) 14.44 或更新版本**。程式不附帶 Visual C++ runtime。
+
+1. 第一次使用前，依 `VC_REDIST_INSTALL.md` 確認並記錄 Redistributable 版本；版本不足時先安裝或更新。
+2. 將整個 `TrackerTool` 資料夾複製到本機。路徑可以包含中文。
+3. 執行 `TrackerTool\TrackerTool.exe`。不需要安裝 Python。
+4. 視窗下方狀態列會顯示目前的 tracker-tool 版本。
 
 請保留 `BUILD_INFO.txt`、`THIRD_PARTY_NOTICES.md`、`THIRD_PARTY_LICENSES/` 等檔案，不要刪除。
 
@@ -78,3 +81,4 @@ Tracker Tool 用來在 **3DEqualizer R5**、**PFTrack 2017**、**SynthEyes 2304*
 
 - 介面為英文。
 - 座標極小（\|x\| < 1e-4）時會以科學記號輸出，目標軟體能否接受尚未驗證。
+- 尚未在「沒有安裝 Redistributable」或「Redistributable 低於 14.44」的電腦上測試；這類電腦不在支援範圍內，詳見 `VC_REDIST_INSTALL.md`。

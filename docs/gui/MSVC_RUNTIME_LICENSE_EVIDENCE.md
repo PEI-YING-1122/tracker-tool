@@ -103,3 +103,18 @@ Visual Studio 授權條款「Distributable Code」一節的全文，無法以自
 | 5 | 未安裝 Redistributable 的乾淨 Windows（VM）：確認無法啟動，並記錄錯誤畫面 | 寫入使用說明的安裝需求 |
 | 6 | 只安裝較舊 Redistributable（< 14.44）的電腦 | 確認是否需要明確的最低版本 |
 | 7 | 1–2 位 Tracking Artist 在實際工作站上啟動並轉換一次 | 不需要重做完整 P6 |
+
+---
+
+## 6. 決定與結果（2026-10-14）
+
+- owner 無法確認擁有符合再散布條件的 Visual Studio 授權，因此**採用方案 B**：v1.1.1 起不隨附 VC++ runtime DLL。
+- 測試結果見 `docs/gui/PLAN_B_MSVC_RUNTIME_TEST.md`：
+  - #1–#5、#7 PASS；
+  - #6（乾淨 Windows / 較舊 runtime）**BLOCKED / NOT TESTED**。
+- owner 接受以「交付前 runtime 版本檢查」與已知限制代替 #6，不作為 v1.1.1 的絕對阻擋。
+- 正式系統需求：
+  - Windows x64；
+  - Microsoft Visual C++ Redistributable (x64) 14.44 或更新，建議使用 Microsoft 官方最新相容版本；
+  - 不符合需求的工作站，不在已驗證的支援範圍內。
+- v1.1.0 的 tag、Release 與交付包不變（仍隨附 runtime DLL）；內部交付以 v1.1.1 取代。
