@@ -49,8 +49,8 @@ v1.1.0 之後 `src/`、`tests/` **沒有任何變更**：Core、GUI、Canonical 
 | Windows bundle smoke test（`b327f91` 乾淨 clone 建置） | PASS；移除 10 個 runtime DLL，bundle 中沒有任何 `vcruntime` / `msvcp` / `concrt` / `vccorlib` / `ucrtbase` / `api-ms-win` DLL |
 | A1–A4（UI Automation 操作打包後的程式） | 4 / 4 與 Artist 已驗收檔案 byte-identical |
 | DLL 載入來源 | `VCRUNTIME140*.dll`、`MSVCP140*.dll` 全部從 `C:\WINDOWS\SYSTEM32` 載入（Redistributable 14.51.36247.0），沒有用到 PATH 或其他位置的副本 |
-| GitHub Actions | 見 §6 |
-| 敏感資料掃描 | push 前執行，見 §6 |
+| GitHub Actions | PASS（§6） |
+| 敏感資料掃描 | PASS（§6） |
 
 ### 與已通過工作站測試的方案 B 測試包比較
 
@@ -116,8 +116,8 @@ v1.1.0 之後 `src/`、`tests/` **沒有任何變更**：Core、GUI、Canonical 
 | 3 | 乾淨 clone 建置 RC、smoke test、DLL 盤點與載入來源 | **完成** |
 | 4 | A1–A4（打包後的程式） | **完成** |
 | 5 | 與方案 B 測試包比對：只有版本與必要文件差異 | **完成** |
-| 6 | 敏感資料掃描（push 前） | push 時記錄 |
-| 7 | GitHub Actions（Windows / Linux / package） | push 後確認 |
+| 6 | 敏感資料掃描（push 前） | **完成**：新 commit 無命中；production 座標 token 0。全歷史掃描仍命中 2026-10-10 已記錄的本機路徑事件 commit（`docs/security/INCIDENT_2026-10-10_LOCAL_PATH_DISCLOSURE.md`），目前檔案樹中沒有 |
+| 7 | GitHub Actions（Windows / Linux / package） | **完成**：`bbae890`，run 38450541009 全部 success |
 | 8 | Owner 批准 tag `v1.1.1` 與 GitHub Release | **待決定** |
 
 ### 批准後的程序
