@@ -1,13 +1,16 @@
 # Tracker Tool v1.1.1 — Release Readiness Report
 
 ```text
+Released      : v1.1.1（annotated tag）→ bb0c84ea80f374da381ddb963b3a4e58979e743c
+GitHub Release: https://github.com/PEI-YING-1122/tracker-tool/releases/tag/v1.1.1
+                published 2026-10-13T19:03:02Z（UTC；台灣時間 2026-10-14 03:03）；not draft、not prerelease；latest；無附件
 Candidate     : release/1.1.x
                 RC bundle 建置自 b327f91；之後的 commit 只新增 validation/ 下的 release 文件，不進入 bundle
 Base          : v1.1.0（tag → 437e7e6，未變更）
 Package       : tracker-tool 1.1.1
-Report date   : 2026-10-14
-Status        : RELEASE CANDIDATE — 尚未建立 tag 或 GitHub Release
-Not done      : tag v1.1.1、GitHub Release、v1.1.1 交付包、合併至 main（PR #8 仍為 Draft）
+Report date   : 2026-10-14（本報告於發布前撰寫；發布狀態與交付驗證於發布後補記，見 §7）
+Status        : RELEASED（owner 於 2026-10-14 批准）
+Not done      : 合併至 main（PR #8 仍為 Draft）
 ```
 
 ---
@@ -118,9 +121,9 @@ v1.1.0 之後 `src/`、`tests/` **沒有任何變更**：Core、GUI、Canonical 
 | 5 | 與方案 B 測試包比對：只有版本與必要文件差異 | **完成** |
 | 6 | 敏感資料掃描（push 前） | **完成**：新 commit 無命中；production 座標 token 0。全歷史掃描仍命中 2026-10-10 已記錄的本機路徑事件 commit（`docs/security/INCIDENT_2026-10-10_LOCAL_PATH_DISCLOSURE.md`），目前檔案樹中沒有 |
 | 7 | GitHub Actions（Windows / Linux / package） | **完成**：`bbae890`，run 38450541009 全部 success |
-| 8 | Owner 批准 tag `v1.1.1` 與 GitHub Release | **待決定** |
+| 8 | Owner 批准 tag `v1.1.1` 與 GitHub Release | **完成**（2026-10-14 批准並發布） |
 
-### 批准後的程序
+### 發布程序（已完成，結果見 §7）
 
 1. 在 `release/1.1.x` 建立 annotated tag `v1.1.1`。
 2. 以 `validation/RELEASE_NOTES_v1.1.1.md` 建立 GitHub Release，**不附 GUI 執行檔**。
@@ -132,3 +135,50 @@ v1.1.0 之後 `src/`、`tests/` **沒有任何變更**：Core、GUI、Canonical 
    - 完成 manifest 校驗。
 
 v1.1.0 的 tag、GitHub Release 與交付包維持不變。PR #8 維持 Draft。
+
+---
+
+## 7. 發布與內部交付（發布後補記）
+
+### 發布前保護
+
+- `bb0c84e` 本機與遠端一致；工作目錄乾淨；沒有未解決的合併。
+- 發布 commit 與工作目錄都沒有衝突標記。
+- GitHub Actions run 38450873759（Windows / Linux / package）全部 success。
+- 敏感資料掃描：
+  - production 座標 token 0；
+  - 發布 commit 的檔案樹沒有本機路徑；
+  - 全歷史仍命中已記錄的 2026-10-10 事件 commit。
+
+### 由 tag 重建的 Windows bundle
+
+從 GitHub 重新 clone `v1.1.1`，以 `uv sync --locked` 建置。
+
+| 檢查 | 結果 |
+|---|---|
+| `BUILD_INFO.txt` | commit `bb0c84ea…`、uncommitted changes: no、tracker-tool 1.1.1、PySide6 6.11.2 |
+| VC++ runtime DLL | 建置時移除 10 個；bundle 中為 0 |
+| Smoke test | PASS |
+| 與已驗證 RC（`b327f91`）比較 | 檔案清單相同（168 個）；所有文件、DLL、`.pyd`、Qt plugins 逐 byte 相同；exe 與 `base_library.zip` 的 Python code object 完全相同；只有 `BUILD_INFO.txt`（commit、建置時間）及 dist-info 中含安裝路徑的 3 個檔案不同 |
+| `TrackerTool.exe` SHA-256 | `bd85f81f4fe249f301c0eb9f5056b9e57ef6b03ca31f16d03197077c4e5df40d` |
+
+### 內部交付包（`packaging/assemble_delivery.py`）
+
+- **保存位置：** owner 指定的本機 v1.1.1 交付資料夾（不在 repository 中，路徑不記錄於公開文件）。
+- **v1.1.0 交付包：** 另存於原資料夾，未覆蓋、未修改（186 個檔案，manifest 校驗通過）。
+
+| 檢查 | 結果 |
+|---|---|
+| `DELIVERY_MANIFEST.txt` | 177 個檔案全部相符（另加 manifest 本身，共 178 個）；manifest SHA-256 `9bff2363…` |
+| `TrackerTool/` | 與 v1.1.1 tag build 逐檔相同；不含 VC++ runtime DLL |
+| 必要文件 | `VC_REDIST_INSTALL.md`、`USER_GUIDE.md`、`USE_AND_LICENSE.md`、`THIRD_PARTY_NOTICES.md`、`BUILD_INFO.txt`；`THIRD_PARTY_LICENSES/` 12 份條文 |
+| `LICENSE_SUPPLEMENT/` | v1.1.1 版授權補充、Qt 6.11.2 第三方元件聲明 |
+| `LGPL_SOURCES/` | `SHA256SUMS.txt` 校驗通過；Qt 原始碼符合官方 md5；`tracker-tool-v1.1.1-src.zip` 為 tag 的 `git archive`（`pyproject.toml` 1.1.1） |
+| 原位 smoke test | PASS；執行後 manifest 仍全部相符 |
+
+### 狀態
+
+- v1.1.1 已發布，內部交付包已建立並驗證。
+- **沒有未解決的發布阻擋。**
+- #6 維持 **BLOCKED / NOT TESTED**，以交付前 runtime 版本檢查與已知限制處理（§3、§4）。
+- 各工作站使用前，須依 `VC_REDIST_INSTALL.md` 確認 Redistributable (x64) ≥ 14.44。

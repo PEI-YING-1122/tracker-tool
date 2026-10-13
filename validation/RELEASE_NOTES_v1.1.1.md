@@ -1,10 +1,10 @@
-# Tracker Tool v1.1.1 — Release Notes (DRAFT)
+# Tracker Tool v1.1.1 — Release Notes
 
 ```text
-Tag            : v1.1.1  (annotated) — NOT CREATED; awaiting owner approval
-Candidate      : release/1.1.x (see validation/RELEASE_READINESS_v1.1.1.md for the exact commit)
+Tag            : v1.1.1  (annotated) → bb0c84ea80f374da381ddb963b3a4e58979e743c
+Tag message    : Tracker Tool v1.1.1 — Visual C++ runtime no longer bundled
 Release title  : Tracker Tool v1.1.1 — Visual C++ runtime no longer bundled
-Status         : DRAFT — release candidate
+Status         : RELEASED 2026-10-14 — https://github.com/PEI-YING-1122/tracker-tool/releases/tag/v1.1.1
 ```
 
 The GitHub Release body is the section below. The Windows GUI executable is delivered internally only and is **not** attached to the GitHub Release.
